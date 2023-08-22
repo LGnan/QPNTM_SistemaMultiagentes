@@ -8,24 +8,24 @@ import heapq
 
 
 class EstacionCarga(Agent):
-    def _init_(self, unique_id, model):
-        super()._init_(unique_id, model)
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
 
 
 class Celda(Agent):
-    def _init_(self, unique_id, model, suciedad: bool = False):
-        super()._init_(unique_id, model)
+    def __init__(self, unique_id, model, suciedad: bool = False):
+        super().__init__(unique_id, model)
         self.sucia = suciedad
 
 
 class Mueble(Agent):
-    def _init_(self, unique_id, model):
-        super()._init_(unique_id, model)
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
 
 
 class RobotLimpieza(Agent):
-    def _init_(self, unique_id, model):
-        super()._init_(unique_id, model)
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
         self.sig_pos = None
         self.movimientos = 0
         self.carga = 100
@@ -40,7 +40,7 @@ class RobotLimpieza(Agent):
     def distancia_euclidiana(self, pos1, pos2):
         x1, y1 = pos1
         x2, y2 = pos2
-        return ((x2 - x1) * 2 + (y2 - y1) * 2) ** 0.5
+        return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
     def estacion_carga_mas_cercana(self):
         # Crea lista d todas las estaciones q hay
@@ -206,7 +206,7 @@ class RobotLimpieza(Agent):
 
 
 class Habitacion(Model):
-    def _init_(
+    def __init__(
         self,
         M: int,
         N: int,
