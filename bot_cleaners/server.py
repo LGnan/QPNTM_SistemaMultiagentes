@@ -1,104 +1,71 @@
 import mesa
+from mesa.visualization.modules import CanvasGrid, ChartModule
+from mesa.visualization.ModularVisualization import ModularServer
+from .model import (
+    Almacen,
+    Producto,
+    AgenteRecolector,
+    AgenteEmpaquetador,
+    EstacionCarga,
+)
 
-from .model import Habitacion, RobotLimpieza, Celda, Mueble, EstacionCarga
 
 MAX_NUMBER_ROBOTS = 20
 
 
 def agent_portrayal(agent):
-    if isinstance(agent, RobotLimpieza):
+    if isinstance(agent, AgenteRecolector):
         return {
             "Shape": "circle",
-            "Filled": "false",
-            "Color": "Cyan",
+            "Filled": "true",
+            "Color": "blue",
             "Layer": 1,
-            "r": 0.9,
-            "text": f"{agent.carga}",
-            "text_color": "black",
+            "r": 0.8,  # Make the circle larger
+            "text": str(agent.bateria) + "%",
+            "text_color": "white",
+            "text_anchor": "middle",
+            "Font": "20px Arial",  # You can adjust the font size here
         }
-    elif isinstance(agent, Mueble):
+    elif isinstance(agent, Producto):
         return {
             "Shape": "rect",
             "Filled": "true",
-            "Color": "black",
+            "Color": "red",
             "Layer": 0,
-            "w": 0.9,
-            "h": 0.9,
+            "w": 0.8,
+            "h": 0.8,
         }
-
     elif isinstance(agent, EstacionCarga):
         return {
             "Shape": "rect",
             "Filled": "true",
             "Color": "green",
             "Layer": 0,
-            "w": 0.9,
-            "h": 0.9,
-            "text": "⚡",  # Emoji d batería
-            "text_color": "white",
+            "w": 0.8,
+            "h": 0.8,
         }
-
-    elif isinstance(agent, Celda):
-        portrayal = {
-            "Shape": "rect",
+    elif isinstance(agent, AgenteEmpaquetador):
+        return {
+            "Shape": "circle",
             "Filled": "true",
-            "Layer": 0,
-            "w": 0.9,
-            "h": 0.9,
-            "text_color": "Black",
+            "Color": "yellow",
+            "Layer": 1,
+            "r": 0.5,
         }
-        if agent.sucia:
-            portrayal["Color"] = "#ccbeaf"
-            portrayal["text"] = "💩"
-        else:
-            portrayal["Color"] = "white"
-            portrayal["text"] = ""
-        return portrayal
 
 
-grid = mesa.visualization.CanvasGrid(agent_portrayal, 20, 20, 400, 400)
-chart_celdas = mesa.visualization.ChartModule(
-    [{"Label": "CeldasSucias", "Color": "#36A2EB", "label": "Celdas Sucias"}],
-    50,
-    200,
-    data_collector_name="datacollector",
-)
+grid = CanvasGrid(agent_portrayal, 20, 20, 400, 400)
 
 model_params = {
-    "num_agentes": mesa.visualization.Slider(
-        "Número de Robots",
-        5,
-        2,
+    "N": mesa.visualization.Slider(
+        "Numero de Robots",
+        1,
+        1,
         MAX_NUMBER_ROBOTS,
         1,
-        description="Escoge cuántos robots deseas implementar en el modelo",
-    ),
-    "porc_celdas_sucias": mesa.visualization.Slider(
-        "Porcentaje de Celdas Sucias",
-        0.3,
-        0.0,
-        0.75,
-        0.05,
-        description="Selecciona el porcentaje de celdas sucias",
-    ),
-    "porc_muebles": mesa.visualization.Slider(
-        "Porcentaje de Muebles",
-        0.1,
-        0.0,
-        0.25,
-        0.01,
-        description="Selecciona el porcentaje de muebles",
-    ),
-    "modo_pos_inicial": mesa.visualization.Choice(
-        "Posición Inicial de los Robots",
-        "Aleatoria",
-        ["Fija", "Aleatoria"],
-        "Seleciona la forma se posicionan los robots",
-    ),
-    "M": 20,
-    "N": 20,
+        description="Escoge cuantos robots deseas implementar en el modelo",
+    )
 }
 
-server = mesa.visualization.ModularServer(
-    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 8521
-)
+server = ModularServer(Almacen, [grid], "Simulacion de Almacen", model_params)
+server.port = 8521  # O cualquier otro puerto que desees
