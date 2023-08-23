@@ -130,6 +130,8 @@ class RobotLimpieza(Agent):
         celda_a_limpiar.sucia = False
         self.sig_pos = celda_a_limpiar.pos
 
+    
+
     def seleccionar_nueva_pos(self, lista_de_vecinos):
         self.sig_pos = self.random.choice(lista_de_vecinos).pos
 
@@ -226,7 +228,7 @@ class Habitacion(Model):
 
         # Posicionamiento de muebless
         num_muebles = int(M * N * porc_muebles)
-        posiciones_muebles = self.random.sample(posiciones_disponibles, k=num_muebles)
+        posiciones_muebles = [(8,7), (9, 7), (10, 7), (11, 7), (8,9), (9, 9), (10, 9), (11, 9), (8,11), (9, 11), (10, 11), (11, 11), (8,13), (9, 13), (10, 13), (11, 13)]
 
         for id, pos in enumerate(posiciones_muebles):
             mueble = Mueble(int(f"{num_agentes}0{id}") + 1, self)
