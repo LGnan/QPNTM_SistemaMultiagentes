@@ -161,6 +161,7 @@ class RobotLimpieza(Agent):
         self.enCarga = True
               
 
+
     def seleccionar_nueva_pos(self, lista_de_vecinos):
         self.sig_pos = self.random.choice(lista_de_vecinos).pos
 
@@ -170,6 +171,14 @@ class RobotLimpieza(Agent):
             vecino
             for vecino in lista_de_vecinos
             if isinstance(vecino, Celda) and vecino.sucia
+        ]
+    
+    @staticmethod
+    def buscar_muebles(lista_de_vecinos):
+        return [
+            vecino
+            for vecino in lista_de_vecinos
+            if isinstance(vecino, Mueble)
         ]
 
     def step(self):
@@ -182,6 +191,16 @@ class RobotLimpieza(Agent):
             if not isinstance(vecino, (Mueble, RobotLimpieza, EstacionCarga))
         ]
 
+        vecinos2 = self.model.grid.get_neighbors(
+            self.pos, moore=True, include_center=False
+        )
+        vecinos2 = [
+            vecino
+            for vecino in vecinos
+            if not isinstance(vecino, (Celda, RobotLimpieza, EstacionCarga))
+        ]
+
+        muebles = self.buscar_muebles(vecinos2)
         celdas_sucias = self.buscar_celdas_sucia(vecinos)
         cagada_pos = self.cagada_mas_cercana()
         estacion_pos = self.estacion_carga_mas_cercana()
@@ -192,14 +211,19 @@ class RobotLimpieza(Agent):
         if self.enCarga == True:
             
             self.mover_hacia_mueble(mueble_cercano_pos)
+            
+            if self.pos == mueble_cercano_pos:
+        
+                self.enCarga = False
+
             return  
         
-        if self.pos == self.mueble_mas_cercano:
-            print(f"Robot {self.unique_id} ha llegado a un mueble.")
-            self.enCarga = False
 
-
-        # si el robot esta en estaicon de carga
+        print("posicionn", self.pos, "mueble cercano", mueble_cercano_pos)
+        
+        
+        
+           
         if any(
             isinstance(agent, EstacionCarga)
             for agent in self.model.grid.get_cell_list_contents([self.pos])
@@ -215,6 +239,7 @@ class RobotLimpieza(Agent):
                 self.tiempo_en_estacion = 0
             return
 
+
         if self.carga <= 40:
            
             estacion_pos = self.estacion_carga_mas_cercana()
@@ -222,7 +247,7 @@ class RobotLimpieza(Agent):
                 self.carga = 100
              
             else:
-                
+
                 self.mover_hacia_estacion(estacion_pos)  # se tira el astar4
 
         elif len(celdas_sucias) == 0:
