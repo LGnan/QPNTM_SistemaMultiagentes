@@ -63,9 +63,7 @@ class RobotLimpieza(Agent):
         estacion_cercana = min(
             estaciones, key=lambda pos: self.distancia_euclidiana(self.pos, pos)
         )
-        print(
-            f"Estación más cercana para el robot {self.unique_id} encontrada en {estacion_cercana}"
-        )
+       
         return estacion_cercana
     
     def mueble_mas_cercano(self):
@@ -84,9 +82,7 @@ class RobotLimpieza(Agent):
         mueble_cercano = min(
             muebles, key=lambda pos: self.distancia_euclidiana(self.pos, pos)
         )
-        print(
-            f"Mueble más cercana para el robot {self.unique_id} encontrada en {mueble_cercano}"
-        )
+       
         return mueble_cercano
     
 
@@ -104,9 +100,7 @@ class RobotLimpieza(Agent):
         cagada_cercana = min(
             cagadas_pos, key=lambda pos: self.distancia_manhattan(self.pos, pos)
         )
-        print(
-            f"Cagada más cercana para el robot {self.unique_id} encontrada en {cagada_cercana}"
-        )
+       
         return cagada_cercana
 
     def a_star(self, start, goal):
@@ -127,12 +121,7 @@ class RobotLimpieza(Agent):
             for next_cell in self.model.grid.get_neighborhood(
                 current, moore=True, include_center=False
             ):
-                if any(
-                    isinstance(agent, Mueble)
-                    for agent in self.model.grid.get_cell_list_contents([next_cell])
-                ):
-                    continue  # Skip this cell if it contains a Mueble
-
+                
                 tentative_g_score = g_score[current] + 1
                 if tentative_g_score < g_score.get(next_cell, float("inf")):
                     came_from[next_cell] = current
@@ -146,27 +135,31 @@ class RobotLimpieza(Agent):
 
     def mover_hacia_estacion(self, estacion_pos):
         path = self.a_star(self.pos, estacion_pos)
+      
         if path:
             next_pos = path[0]
             self.model.grid.move_agent(self, next_pos)
             self.pos = next_pos
             self.sig_pos = next_pos
 
-    def mover_hacia_mueble(self, estacion_pos):
-        path = self.a_star(self.pos, estacion_pos)
+    def mover_hacia_mueble(self, mueble_pos):
+        if mueble_pos is None:
+            
+            return
+        path = self.a_star(self.pos, mueble_pos)
+       
         if path:
             next_pos = path[0]
             self.model.grid.move_agent(self, next_pos)
             self.pos = next_pos
             self.sig_pos = next_pos
 
-    def limpiar_una_celda(self, lista_de_celdas_sucias, mueble_cercano_pos):
+
+    def limpiar_una_celda(self, lista_de_celdas_sucias):
         celda_a_limpiar = self.random.choice(lista_de_celdas_sucias)
         celda_a_limpiar.sucia = False
         self.enCarga = True
-
-        self.mover_hacia_mueble(mueble_cercano_pos)
-       
+              
 
     def seleccionar_nueva_pos(self, lista_de_vecinos):
         self.sig_pos = self.random.choice(lista_de_vecinos).pos
@@ -188,17 +181,25 @@ class RobotLimpieza(Agent):
             for vecino in vecinos
             if not isinstance(vecino, (Mueble, RobotLimpieza, EstacionCarga))
         ]
-        celdas_sucias = self.buscar_celdas_sucia(vecinos)
 
+        celdas_sucias = self.buscar_celdas_sucia(vecinos)
         cagada_pos = self.cagada_mas_cercana()
         estacion_pos = self.estacion_carga_mas_cercana()
         mueble_cercano_pos = self.mueble_mas_cercano()
 
-        if mueble_cercano_pos is None:
-            print("No se encontró un mueble cercano.")
-            return  # Sal del método step
 
-        # si el robot esta en estaicon
+        # Verificar si el robot está llevando una carga
+        if self.enCarga == True:
+            
+            self.mover_hacia_mueble(mueble_cercano_pos)
+            return  
+        
+        if self.pos == self.mueble_mas_cercano:
+            print(f"Robot {self.unique_id} ha llegado a un mueble.")
+            self.enCarga = False
+
+
+        # si el robot esta en estaicon de carga
         if any(
             isinstance(agent, EstacionCarga)
             for agent in self.model.grid.get_cell_list_contents([self.pos])
@@ -215,36 +216,40 @@ class RobotLimpieza(Agent):
             return
 
         if self.carga <= 40:
-            print(
-                f"Robot {self.unique_id} con carga {self.carga} buscando estación de carga..."
-            )
+           
             estacion_pos = self.estacion_carga_mas_cercana()
             if self.pos == estacion_pos:
                 self.carga = 100
-                print("en la estacion")
+             
             else:
-                print("buscando estacion")
+                
                 self.mover_hacia_estacion(estacion_pos)  # se tira el astar4
 
         elif len(celdas_sucias) == 0:
             if cagada_pos == None:
                 self.mover_hacia_estacion(estacion_pos)
             else:
+                #Mover hacia paquete
                 self.mover_hacia_estacion(cagada_pos)
 
         else:
+            self.limpiar_una_celda(celdas_sucias)
+
+        
+        # Salir del método step
             
-            self.limpiar_una_celda(celdas_sucias, mueble_cercano_pos)
 
     def advance(self):
-        if self.carga == 100:
-            self.previous_pos = self.pos
-            self.movimientos = 0
-        if self.pos != self.sig_pos:
-            self.movimientos += 1
-        if self.carga > 0:
-            self.carga -= 1
-            self.model.grid.move_agent(self, self.sig_pos)
+        if self.sig_pos is not None:  # Añadir esta comprobación
+            if self.carga == 100:
+                self.previous_pos = self.pos
+                self.movimientos = 0
+            if self.pos != self.sig_pos:
+                self.movimientos += 1
+            if self.carga > 0:
+                self.carga -= 1
+                self.model.grid.move_agent(self, self.sig_pos)
+
 
 
 class Habitacion(Model):
@@ -316,28 +321,7 @@ class Habitacion(Model):
         self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
         posiciones_dispCacaPipi = [
-            (14, 6),
-            (14, 7),
-            (14, 8),
-            (14, 9),
-            (14, 10),
-            (14, 11),
-            (14, 12),
-            (14, 13),
-            (14, 14),
-            (14, 15),
-            (14, 16),
-            (15, 6),
-            (15, 7),
-            (15, 8),
-            (15, 9),
-            (15, 10),
-            (15, 11),
-            (15, 12),
-            (15, 13),
-            (15, 14),
-            (15, 15),
-            (15, 16),
+    
             (16, 6),
             (16, 7),
             (16, 8),
@@ -378,7 +362,7 @@ class Habitacion(Model):
                 posiciones_disponibles, k=num_agentes
             )
         else:  # 'Fija'
-            pos_inicial_robots = [(1, 1)] * num_agentes
+            pos_inicial_robots = [(0, N-1)] * num_agentes
 
         for id in range(num_agentes):
             robot = RobotLimpieza(id, self)
