@@ -49,7 +49,7 @@ def agent_portrayal(agent):
         }
         if agent.sucia:
             portrayal["Color"] = "#ccbeaf"
-            portrayal["text"] = "💩"
+            portrayal["text"] = "📦"
         else:
             portrayal["Color"] = "white"
             portrayal["text"] = ""
