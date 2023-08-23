@@ -34,9 +34,13 @@ class RobotLimpieza(Agent):
         self.enCarga = False
 
     def distancia_manhattan(self, pos1, pos2):
+        if pos2 is None:
+            # Handle the None case
+            return float('inf')  # or some other value
         x1, y1 = pos1
         x2, y2 = pos2
         return abs(x2 - x1) + abs(y2 - y1)
+
 
     def distancia_euclidiana(self, pos1, pos2):
         x1, y1 = pos1
@@ -133,7 +137,7 @@ class RobotLimpieza(Agent):
                 if tentative_g_score < g_score.get(next_cell, float("inf")):
                     came_from[next_cell] = current
                     g_score[next_cell] = tentative_g_score
-                    f_score = tentative_g_score + self.distancia_manhattan(
+                    f_score = tentative_g_score + self.distancia_euclidiana(
                         next_cell, goal
                     )
                     heapq.heappush(open_list, (f_score, next_cell))
@@ -286,6 +290,7 @@ class Habitacion(Model):
         for id, pos in enumerate(posiciones_muebles):
             mueble = Mueble(int(f"{num_agentes}0{id}") + 1, self)
             self.grid.place_agent(mueble, pos)
+            self.schedule.add(mueble)  # Añadir la estación al schedules
             posiciones_disponibles.remove(pos)
 
         # Posicionar las estaciones en las esquinas 346765
