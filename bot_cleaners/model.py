@@ -346,7 +346,16 @@ class Habitacion(Model):
         self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
         posiciones_dispCacaPipi = [
-    
+          
+            (15, -1),
+            (15, 0),
+            (15, 1),
+            (15, 2),
+            (15, 3),
+            (15, 4),
+            (15, 5),
+
+
             (16, 6),
             (16, 7),
             (16, 8),
@@ -368,7 +377,8 @@ class Habitacion(Model):
             (17, 13),
             (17, 14),
             (17, 15),
-            (17, 16)
+            (17, 16),
+            
         ]
 
         posiciones_celdas_sucias = self.random.sample(
