@@ -1,6 +1,14 @@
 import mesa
 
-from .model import Habitacion, RobotLimpieza, Celda, Mueble, EstacionCarga
+from .model import (
+    Habitacion,
+    RobotLimpieza,
+    Celda,
+    Mueble,
+    EstacionCarga,
+    EstanteriaGrande,
+    Cinta,
+)
 
 MAX_NUMBER_ROBOTS = 20
 
@@ -21,6 +29,26 @@ def agent_portrayal(agent):
             "Shape": "rect",
             "Filled": "true",
             "Color": "black",
+            "Layer": 0,
+            "w": 0.9,
+            "h": 0.9,
+        }
+    
+    elif isinstance(agent, EstanteriaGrande):
+        return {
+            "Shape": "rect",
+            "Filled": "true",
+            "Color": "red",
+            "Layer": 0,
+            "w": 0.9,
+            "h": 0.9,
+        }
+    
+    elif isinstance(agent, Cinta):
+        return {
+            "Shape": "rect",
+            "Filled": "true",
+            "Color": "blue",
             "Layer": 0,
             "w": 0.9,
             "h": 0.9,
@@ -56,7 +84,7 @@ def agent_portrayal(agent):
         return portrayal
 
 
-grid = mesa.visualization.CanvasGrid(agent_portrayal, 20, 20, 400, 400)
+grid = mesa.visualization.CanvasGrid(agent_portrayal, 32, 24, 500, 500)
 chart_celdas = mesa.visualization.ChartModule(
     [{"Label": "CeldasSucias", "Color": "#36A2EB", "label": "Celdas Sucias"}],
     50,
@@ -95,8 +123,8 @@ model_params = {
         ["Fija", "Aleatoria"],
         "Seleciona la forma se posicionan los robots",
     ),
-    "M": 20,
-    "N": 20,
+    "M": 32,
+    "N": 24,
 }
 
 server = mesa.visualization.ModularServer(

@@ -18,7 +18,17 @@ class Celda(Agent):
         self.sucia = suciedad
 
 
-class Mueble(Agent):
+class Mueble(Agent):  # estantería chica
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+
+class EstanteriaGrande(Agent):  # estantería grande
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+
+class Cinta(Agent):  # estantería cinta
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
@@ -36,11 +46,10 @@ class RobotLimpieza(Agent):
     def distancia_manhattan(self, pos1, pos2):
         if pos2 is None:
             # Handle the None case
-            return float('inf')  # or some other value
+            return float("inf")  # or some other value
         x1, y1 = pos1
         x2, y2 = pos2
         return abs(x2 - x1) + abs(y2 - y1)
-
 
     def distancia_euclidiana(self, pos1, pos2):
         x1, y1 = pos1
@@ -63,9 +72,9 @@ class RobotLimpieza(Agent):
         estacion_cercana = min(
             estaciones, key=lambda pos: self.distancia_euclidiana(self.pos, pos)
         )
-       
+
         return estacion_cercana
-    
+
     def mueble_mas_cercano(self):
         # Crea lista d todas las estaciones q hay
         muebles = [
@@ -82,9 +91,8 @@ class RobotLimpieza(Agent):
         mueble_cercano = min(
             muebles, key=lambda pos: self.distancia_euclidiana(self.pos, pos)
         )
-       
+
         return mueble_cercano
-    
 
     def cagada_mas_cercana(self):
         cagadas_pos = [
@@ -100,7 +108,7 @@ class RobotLimpieza(Agent):
         cagada_cercana = min(
             cagadas_pos, key=lambda pos: self.distancia_manhattan(self.pos, pos)
         )
-       
+
         return cagada_cercana
 
     def a_star(self, start, goal):
@@ -121,7 +129,6 @@ class RobotLimpieza(Agent):
             for next_cell in self.model.grid.get_neighborhood(
                 current, moore=True, include_center=False
             ):
-                
                 tentative_g_score = g_score[current] + 1
                 if tentative_g_score < g_score.get(next_cell, float("inf")):
                     came_from[next_cell] = current
@@ -135,7 +142,7 @@ class RobotLimpieza(Agent):
 
     def mover_hacia_estacion(self, estacion_pos):
         path = self.a_star(self.pos, estacion_pos)
-      
+
         if path:
             next_pos = path[0]
             self.model.grid.move_agent(self, next_pos)
@@ -144,23 +151,19 @@ class RobotLimpieza(Agent):
 
     def mover_hacia_mueble(self, mueble_pos):
         if mueble_pos is None:
-            
             return
         path = self.a_star(self.pos, mueble_pos)
-       
+
         if path:
             next_pos = path[0]
             self.model.grid.move_agent(self, next_pos)
             self.pos = next_pos
             self.sig_pos = next_pos
 
-
     def limpiar_una_celda(self, lista_de_celdas_sucias):
         celda_a_limpiar = self.random.choice(lista_de_celdas_sucias)
         celda_a_limpiar.sucia = False
         self.enCarga = True
-              
-
 
     def seleccionar_nueva_pos(self, lista_de_vecinos):
         self.sig_pos = self.random.choice(lista_de_vecinos).pos
@@ -172,14 +175,10 @@ class RobotLimpieza(Agent):
             for vecino in lista_de_vecinos
             if isinstance(vecino, Celda) and vecino.sucia
         ]
-    
+
     @staticmethod
     def buscar_muebles(lista_de_vecinos):
-        return [
-            vecino
-            for vecino in lista_de_vecinos
-            if isinstance(vecino, Mueble)
-        ]
+        return [vecino for vecino in lista_de_vecinos if isinstance(vecino, Mueble)]
 
     def step(self):
         vecinos = self.model.grid.get_neighbors(
@@ -206,24 +205,17 @@ class RobotLimpieza(Agent):
         estacion_pos = self.estacion_carga_mas_cercana()
         mueble_cercano_pos = self.mueble_mas_cercano()
 
-
         # Verificar si el robot está llevando una carga
         if self.enCarga == True:
-            
             self.mover_hacia_mueble(mueble_cercano_pos)
-            
+
             if self.pos == mueble_cercano_pos:
-        
                 self.enCarga = False
 
-            return  
-        
+            return
 
         print("posicionn", self.pos, "mueble cercano", mueble_cercano_pos)
-        
-        
-        
-           
+
         if any(
             isinstance(agent, EstacionCarga)
             for agent in self.model.grid.get_cell_list_contents([self.pos])
@@ -239,30 +231,25 @@ class RobotLimpieza(Agent):
                 self.tiempo_en_estacion = 0
             return
 
-
         if self.carga <= 40:
-           
             estacion_pos = self.estacion_carga_mas_cercana()
             if self.pos == estacion_pos:
                 self.carga = 100
-             
-            else:
 
+            else:
                 self.mover_hacia_estacion(estacion_pos)  # se tira el astar4
 
         elif len(celdas_sucias) == 0:
             if cagada_pos == None:
                 self.mover_hacia_estacion(estacion_pos)
             else:
-                #Mover hacia paquete
+                # Mover hacia paquete
                 self.mover_hacia_estacion(cagada_pos)
 
         else:
             self.limpiar_una_celda(celdas_sucias)
 
-        
         # Salir del método step
-            
 
     def advance(self):
         if self.sig_pos is not None:  # Añadir esta comprobación
@@ -274,7 +261,6 @@ class RobotLimpieza(Agent):
             if self.carga > 0:
                 self.carga -= 1
                 self.model.grid.move_agent(self, self.sig_pos)
-
 
 
 class Habitacion(Model):
@@ -299,23 +285,137 @@ class Habitacion(Model):
         # Posicionamiento de muebless
         num_muebles = int(M * N * porc_muebles)
         posiciones_muebles = [
-            (8, 7),
-            (9, 7),
-            (10, 7),
-            (11, 7),
-            (8, 9),
-            (9, 9),
-            (10, 9),
-            (11, 9),
+            # Cintas
+            (28, 14),
+            (27, 14),
+            (25, 14),
+            (24, 14),
+            (28, 9),
+            (27, 9),
+            (25, 9),
+            (24, 9),
+            (1, 14),
+            (2, 14),
+            (3, 14),
+            (1, 9),
+            (2, 9),
+            (3, 9),
+            # EstanteríasChicas
+            (8, 18),
+            (9, 18),
+            (10, 18),
+            (11, 18),
+            (12, 18),
+            (13, 18),
+            (14, 18),
+            (15, 18),
+            (16, 18),
+            (17, 18),
+            (18, 18),
+            (8, 15),
+            (9, 15),
+            (10, 15),
+            (11, 15),
+            (12, 15),
+            (13, 15),
+            (14, 15),
+            (15, 15),
+            (16, 15),
+            (17, 15),
+            (18, 15),
+            (8, 8),
+            (9, 8),
+            (10, 8),
+            (11, 8),
+            (12, 8),
+            (13, 8),
+            (14, 8),
+            (15, 8),
+            (16, 8),
+            (17, 8),
+            (18, 8),
+            (8, 5),
+            (9, 5),
+            (10, 5),
+            (11, 5),
+            (12, 5),
+            (13, 5),
+            (14, 5),
+            (15, 5),
+            (16, 5),
+            (17, 5),
+            (18, 5),
+            # Estanterías Grandes
+            (8, 22),
+            (9, 22),
+            (10, 22),
+            (11, 22),
+            (12, 22),
+            (13, 22),
+            (14, 22),
+            (15, 22),
+            (16, 22),
+            (17, 22),
+            (18, 22),
+            (8, 21),
+            (9, 21),
+            (10, 21),
+            (11, 21),
+            (12, 21),
+            (13, 21),
+            (14, 21),
+            (15, 21),
+            (16, 21),
+            (17, 21),
+            (18, 21),
+            (8, 12),
+            (9, 12),
+            (10, 12),
+            (11, 12),
+            (12, 12),
+            (13, 12),
+            (14, 12),
+            (15, 12),
+            (16, 12),
+            (17, 12),
+            (18, 12),
             (8, 11),
             (9, 11),
             (10, 11),
             (11, 11),
-            (8, 13),
-            (9, 13),
-            (10, 13),
-            (11, 13),
+            (12, 11),
+            (13, 11),
+            (14, 11),
+            (15, 11),
+            (16, 11),
+            (17, 11),
+            (18, 11),
+            (8, 2),
+            (9, 2),
+            (10, 2),
+            (11, 2),
+            (12, 2),
+            (13, 2),
+            (14, 2),
+            (15, 2),
+            (16, 2),
+            (17, 2),
+            (18, 2),
+            (8, 1),
+            (9, 1),
+            (10, 1),
+            (11, 1),
+            (12, 1),
+            (13, 1),
+            (14, 1),
+            (15, 1),
+            (16, 1),
+            (17, 1),
+            (18, 1),
         ]
+        # EC = [(8,18),(9,18),(10,18),(11,18),(12,18),(13,18),(14,18),(15,18),(16,18),(17,18),(18,18), (8,15),(9,15),(10,15),(11,15),(12,15),(13,15),(14,15),(15,15),(16,15),(17,15),(18,15), (8,8), (9,8), (10,8), (11,8), (12,8), (13,8), (14,8), (15,8), (16,8), (17,8), (18,8), (8,5), (9,5), (10,5), (11,5), (12,5), (13,5), (14,5), (15,5), (16,5), (17,5), (18,5)]
+        # EG = [(8,22),(9,22),(10,22),(11,22),(12,22),(13,22),(14,22),(15,22),(16,22),(17,22),(18,22), (8,21),(9,21),(10,21),(11,21),(12,21),(13,21),(14,21),(15,21),(16,21),(17,21),(18,21), (8,12), (9,12), (10,12), (11,12), (12,12), (13,12), (14,12), (15,12), (16,12), (17,12), (18,12), (8,11), (9,11), (10,11), (11,11), (12,11), (13,11), (14,11), (15,11), (16,11), (17,11), (18,11), (8,2), (9,2), (10,2), (11,2), (12,2), (13,2), (14,2),(15,2), (16,2), (17,2), (18,2), (8,1), (9,1), (10,1), (11,1), (12,1), (13,1), (14,1),(15,1), (16,1), (17,1), (18,1),]
+        # Cinta = [(1, 14), (2, 14), (3, 14),(1,9), (2,9), (3, 9)]
 
         for id, pos in enumerate(posiciones_muebles):
             mueble = Mueble(int(f"{num_agentes}0{id}") + 1, self)
@@ -346,39 +446,64 @@ class Habitacion(Model):
         self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
         posiciones_dispCacaPipi = [
-          
-            (15, -1),
-            (15, 0),
-            (15, 1),
-            (15, 2),
-            (15, 3),
-            (15, 4),
-            (15, 5),
-
-
-            (16, 6),
-            (16, 7),
-            (16, 8),
-            (16, 9),
-            (16, 10),
-            (16, 11),
-            (16, 12),
-            (16, 13),
-            (16, 14),
-            (16, 15),
-            (16, 16),
-            (17, 6),
-            (17, 7),
-            (17, 8),
-            (17, 9),
-            (17, 10),
-            (17, 11),
-            (17, 12),
-            (17, 13),
-            (17, 14),
-            (17, 15),
-            (17, 16),
-            
+            # (15, 0),
+            # (15, 1),
+            # (15, 2),
+            # (15, 3),
+            # (15, 4),
+            # (15, 5),
+            # (16, 6),
+            # (16, 7),
+            # (16, 8),
+            # (16, 9),
+            # (16, 10),
+            # (16, 11),
+            # (16, 12),
+            # (16, 13),
+            # (16, 14),
+            # (16, 15),
+            # (16, 16),
+            # (17, 6),
+            # (17, 7),
+            # (17, 8),
+            # (17, 9),
+            # (17, 10),
+            # (17, 11),
+            # (17, 12),
+            # (17, 13),
+            # (17, 14),
+            # (17, 15),
+            # (17, 16),
+            (22, 7),
+            (23, 7),
+            (24, 7),
+            (25, 7),
+            (26, 7),
+            (27, 7),
+            (28, 7),
+            (22, 6),
+            (23, 6),
+            (24, 6),
+            (25, 6),
+            (26, 6),
+            (27, 6),
+            (28, 6),
+            (22, 5),
+            (23, 5),
+            (24, 5),
+            (25, 5),
+            (26, 5),
+            (27, 5),
+            (28, 5),
+            (22, 4),
+            (23, 4),
+            (24, 4),
+            (25, 4),
+            (26, 4),
+            (27, 4),
+            (28, 4),
+            (23, 14),
+            (23, 9),
         ]
 
         posiciones_celdas_sucias = self.random.sample(
@@ -397,7 +522,7 @@ class Habitacion(Model):
                 posiciones_disponibles, k=num_agentes
             )
         else:  # 'Fija'
-            pos_inicial_robots = [(0, N-1)] * num_agentes
+            pos_inicial_robots = [(0, N - 1)] * num_agentes
 
         for id in range(num_agentes):
             robot = RobotLimpieza(id, self)
