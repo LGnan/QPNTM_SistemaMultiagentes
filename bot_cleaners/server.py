@@ -2,9 +2,9 @@ import mesa
 
 from .model import (
     Habitacion,
-    RobotLimpieza,
+    AgenteMover,
     Celda,
-    Mueble,
+    EstanteriaChica,
     EstacionCarga,
     EstanteriaGrande,
     Cinta,
@@ -14,26 +14,29 @@ MAX_NUMBER_ROBOTS = 20
 
 
 def agent_portrayal(agent):
-    if isinstance(agent, RobotLimpieza):
+    if isinstance(agent, AgenteMover):
         return {
             "Shape": "circle",
             "Filled": "false",
-            "Color": "Cyan",
+            "Color": agent.color,  #pa q tengan diferente qolor
             "Layer": 1,
-            "r": 0.9,
+            "r": 1.0,
             "text": f"{agent.carga}",
-            "text_color": "black",
+            "text_color": "white",
         }
-    elif isinstance(agent, Mueble):
+    elif isinstance(agent, EstanteriaChica):
+        color = "black" if not agent.enUso else "blue" 
+        text = "" if not agent.enUso else "📦" 
         return {
             "Shape": "rect",
             "Filled": "true",
-            "Color": "black",
+            "Color": color,
             "Layer": 0,
             "w": 0.9,
-            "h": 0.9,
+            "h": 0.9,  
+            "text" : text
         }
-    
+
     elif isinstance(agent, EstanteriaGrande):
         return {
             "Shape": "rect",
@@ -43,7 +46,7 @@ def agent_portrayal(agent):
             "w": 0.9,
             "h": 0.9,
         }
-    
+
     elif isinstance(agent, Cinta):
         return {
             "Shape": "rect",
@@ -53,7 +56,6 @@ def agent_portrayal(agent):
             "w": 0.9,
             "h": 0.9,
         }
-
     elif isinstance(agent, EstacionCarga):
         return {
             "Shape": "rect",
@@ -128,5 +130,5 @@ model_params = {
 }
 
 server = mesa.visualization.ModularServer(
-    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9100
+    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9108
 )
