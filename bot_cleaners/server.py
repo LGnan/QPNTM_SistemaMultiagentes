@@ -4,7 +4,7 @@ from .model import (
     Habitacion,
     AgenteMover,
     Celda,
-    EstanteriaChica,
+    Mueble,
     EstacionCarga,
     EstanteriaGrande,
     Cinta,
