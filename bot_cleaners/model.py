@@ -8,10 +8,6 @@ import numpy as np
 import heapq
 import keyboard
 
-#pene comes chocas
-#pene
-#chupas
-
 class EstacionCarga(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
@@ -50,6 +46,7 @@ class AgenteMover(Agent):
         self.previous_pos = None
         self.tiempo_en_estacion = 0
         self.enCarga = False
+        self.idCaja = None
 
     def mover(self, cinta_pos):
         if cinta_pos is None:
@@ -174,9 +171,11 @@ class AgenteMover(Agent):
             for next_cell in self.model.grid.get_neighborhood(
                 current, moore=True, include_center=False
             ):
-                
-                if any(isinstance(agent, AgenteMover) for agent in self.model.grid.get_cell_list_contents([next_cell])):
-                    continue  
+                if any(
+                    isinstance(agent, AgenteMover)
+                    for agent in self.model.grid.get_cell_list_contents([next_cell])
+                ):
+                    continue
 
                 if any(
                     isinstance(agent, EstanteriaChica) and agent.enUso == True
@@ -308,7 +307,8 @@ class AgenteMover(Agent):
                 #dtermna si estoy parado en la celda sucia igual q arriba con lo d los muebles chiquitos (eliminamos el limpiar celda)
                 celda_actual = self.model.grid.get_cell_list_contents([self.pos])[0]
                 if isinstance(celda_actual, Celda) and celda_actual.sucia:
-                    celda_actual.sucia = False
+                    self.idCaja = celda_actual.unique_id
+                    self.model.grid.remove_agent(celda_actual)
                     self.enCarga = True
         # Salir del método step
 
@@ -347,6 +347,7 @@ class Habitacion(Model):
         self.porc_celdas_sucias = porc_celdas_sucias
         self.porc_muebles = porc_muebles
         self.step_counter = step_counter
+        self.id_counter = 1
         self.grid = MultiGrid(M, N, False)
         self.schedule = SimultaneousActivation(self)
 
@@ -428,14 +429,15 @@ class Habitacion(Model):
         )
 
 
-        new_dirty_cell = Celda(1000, self)
+        new_dirty_cell = Celda(3000, self)
         new_dirty_cell.sucia = True  # Suponiendo que el atributo para suciedad se llama 'sucia'
         self.schedule.add(new_dirty_cell)
         self.grid.place_agent(new_dirty_cell, (23, 14))
-        new_dirty_cell = Celda(2000, self)
+        new_dirty_cell = Celda(4000, self)
         new_dirty_cell.sucia = True  # Suponiendo que el atributo para suciedad se llama 'sucia'
         self.schedule.add(new_dirty_cell)
         self.grid.place_agent(new_dirty_cell, (23, 9))
+        
 
         # Posicionamiento de agentes robot
         if modo_pos_inicial == "Aleatoria":
@@ -482,15 +484,16 @@ class Habitacion(Model):
         
         if keyboard.is_pressed('g'):
 
-            new_dirty_cell = Celda(1001+self.step_counter, self)  # Usar un ID fijo
+            new_dirty_cell = Celda(3001+self.id_counter, self)  # Usar un ID fijo
             new_dirty_cell.sucia = True
             self.schedule.add(new_dirty_cell)
             self.grid.place_agent(new_dirty_cell, (x, y))
             
-            new_dirty_cell = Celda(2001+self.step_counter, self)  # Usar otro ID fijo
+            new_dirty_cell = Celda(4001+self.id_counter, self)  # Usar otro ID fijo
             new_dirty_cell.sucia = True
             self.schedule.add(new_dirty_cell)
             self.grid.place_agent(new_dirty_cell, (x2, y2))
+            self.id_counter+=1
 
 
     def todoLimpio(self):
