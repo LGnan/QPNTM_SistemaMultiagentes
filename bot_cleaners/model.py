@@ -18,7 +18,7 @@ class Celda(Agent):
         self.sucia = suciedad
 
 
-class Mueble(Agent):  # estantería chica
+class EstanteriaChica(Agent):  # estantería chica
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
@@ -43,6 +43,17 @@ class RobotLimpieza(Agent):
         self.tiempo_en_estacion = 0
         self.enCarga = False
 
+    def mover(self, cinta_pos):
+        if cinta_pos is None:
+            return
+        path = self.a_star(self.pos, cinta_pos)
+
+        if path:
+            next_pos = path[0]
+            self.model.grid.move_agent(self, next_pos)
+            self.pos = next_pos
+            self.sig_pos = next_pos
+
     def distancia_manhattan(self, pos1, pos2):
         if pos2 is None:
             # Handle the None case
@@ -55,6 +66,40 @@ class RobotLimpieza(Agent):
         x1, y1 = pos1
         x2, y2 = pos2
         return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+    def estanteria_grande_mas_cercana(self):
+        estanterias = [
+            agent.pos
+            for agent in self.model.schedule.agents
+            if isinstance(agent, EstanteriaGrande)
+        ]
+
+        if not estanterias:
+            print("No hay estanterías grandes en el modelo.")
+            return None
+
+        estanteria_cercana = min(
+            estanterias, key=lambda pos: self.distancia_euclidiana(self.pos, pos)
+        )
+
+        return estanteria_cercana
+
+    def cinta_mas_cercana(self):
+        cintas = [
+            agent.pos
+            for agent in self.model.schedule.agents
+            if isinstance(agent, Cinta)
+        ]
+
+        if not cintas:
+            print("No hay cintas en el modelo.")
+            return None
+
+        cinta_cercana = min(
+            cintas, key=lambda pos: self.distancia_euclidiana(self.pos, pos)
+        )
+
+        return cinta_cercana
 
     def estacion_carga_mas_cercana(self):
         # Crea lista d todas las estaciones q hay
@@ -80,7 +125,7 @@ class RobotLimpieza(Agent):
         muebles = [
             agent.pos
             for agent in self.model.schedule.agents
-            if isinstance(agent, Mueble)
+            if isinstance(agent, EstanteriaChica)
         ]
 
         if not muebles:
@@ -178,7 +223,9 @@ class RobotLimpieza(Agent):
 
     @staticmethod
     def buscar_muebles(lista_de_vecinos):
-        return [vecino for vecino in lista_de_vecinos if isinstance(vecino, Mueble)]
+        return [
+            vecino for vecino in lista_de_vecinos if isinstance(vecino, EstanteriaChica)
+        ]
 
     def step(self):
         vecinos = self.model.grid.get_neighbors(
@@ -187,7 +234,7 @@ class RobotLimpieza(Agent):
         vecinos = [
             vecino
             for vecino in vecinos
-            if not isinstance(vecino, (Mueble, RobotLimpieza, EstacionCarga))
+            if not isinstance(vecino, (EstanteriaChica, RobotLimpieza, EstacionCarga))
         ]
 
         vecinos2 = self.model.grid.get_neighbors(
@@ -227,7 +274,7 @@ class RobotLimpieza(Agent):
 
             if self.tiempo_en_estacion >= 2 and self.carga <= 100:
                 if self.previous_pos is not None:
-                    self.mover_hacia_estacion(self.previous_pos)
+                    self.mover(self.previous_pos)
                 self.tiempo_en_estacion = 0
             return
 
@@ -237,14 +284,14 @@ class RobotLimpieza(Agent):
                 self.carga = 100
 
             else:
-                self.mover_hacia_estacion(estacion_pos)  # se tira el astar4
+                self.mover(estacion_pos)  # se tira el astar4
 
         elif len(celdas_sucias) == 0:
             if cagada_pos == None:
-                self.mover_hacia_estacion(estacion_pos)
+                self.mover(estacion_pos)
             else:
                 # Mover hacia paquete
-                self.mover_hacia_estacion(cagada_pos)
+                self.mover(cagada_pos)
 
         else:
             self.limpiar_una_celda(celdas_sucias)
@@ -282,198 +329,22 @@ class Habitacion(Model):
 
         posiciones_disponibles = [pos for _, pos in self.grid.coord_iter()]
 
-        # Posicionamiento de muebless
-        num_muebles = int(M * N * porc_muebles)
-        posiciones_muebles = [
-            # Cintas
-            (28, 14),
-            (27, 14),
-            (25, 14),
-            (24, 14),
-            (28, 9),
-            (27, 9),
-            (25, 9),
-            (24, 9),
-            (1, 14),
-            (2, 14),
-            (3, 14),
-            (1, 9),
-            (2, 9),
-            (3, 9),
-            # EstanteríasChicas
-            (8, 18),
-            (9, 18),
-            (10, 18),
-            (11, 18),
-            (12, 18),
-            (13, 18),
-            (14, 18),
-            (15, 18),
-            (16, 18),
-            (17, 18),
-            (18, 18),
-            (8, 15),
-            (9, 15),
-            (10, 15),
-            (11, 15),
-            (12, 15),
-            (13, 15),
-            (14, 15),
-            (15, 15),
-            (16, 15),
-            (17, 15),
-            (18, 15),
-            (8, 8),
-            (9, 8),
-            (10, 8),
-            (11, 8),
-            (12, 8),
-            (13, 8),
-            (14, 8),
-            (15, 8),
-            (16, 8),
-            (17, 8),
-            (18, 8),
-            (8, 5),
-            (9, 5),
-            (10, 5),
-            (11, 5),
-            (12, 5),
-            (13, 5),
-            (14, 5),
-            (15, 5),
-            (16, 5),
-            (17, 5),
-            (18, 5),
-            # Estanterías Grandes
-            (8, 22),
-            (9, 22),
-            (10, 22),
-            (11, 22),
-            (12, 22),
-            (13, 22),
-            (14, 22),
-            (15, 22),
-            (16, 22),
-            (17, 22),
-            (18, 22),
-            (8, 21),
-            (9, 21),
-            (10, 21),
-            (11, 21),
-            (12, 21),
-            (13, 21),
-            (14, 21),
-            (15, 21),
-            (16, 21),
-            (17, 21),
-            (18, 21),
-            (8, 12),
-            (9, 12),
-            (10, 12),
-            (11, 12),
-            (12, 12),
-            (13, 12),
-            (14, 12),
-            (15, 12),
-            (16, 12),
-            (17, 12),
-            (18, 12),
-            (8, 11),
-            (9, 11),
-            (10, 11),
-            (11, 11),
-            (12, 11),
-            (13, 11),
-            (14, 11),
-            (15, 11),
-            (16, 11),
-            (17, 11),
-            (18, 11),
-            (8, 2),
-            (9, 2),
-            (10, 2),
-            (11, 2),
-            (12, 2),
-            (13, 2),
-            (14, 2),
-            (15, 2),
-            (16, 2),
-            (17, 2),
-            (18, 2),
-            (8, 1),
-            (9, 1),
-            (10, 1),
-            (11, 1),
-            (12, 1),
-            (13, 1),
-            (14, 1),
-            (15, 1),
-            (16, 1),
-            (17, 1),
-            (18, 1),
-        ]
-        # EC = [(8,18),(9,18),(10,18),(11,18),(12,18),(13,18),(14,18),(15,18),(16,18),(17,18),(18,18), (8,15),(9,15),(10,15),(11,15),(12,15),(13,15),(14,15),(15,15),(16,15),(17,15),(18,15), (8,8), (9,8), (10,8), (11,8), (12,8), (13,8), (14,8), (15,8), (16,8), (17,8), (18,8), (8,5), (9,5), (10,5), (11,5), (12,5), (13,5), (14,5), (15,5), (16,5), (17,5), (18,5)]
-        # EG = [(8,22),(9,22),(10,22),(11,22),(12,22),(13,22),(14,22),(15,22),(16,22),(17,22),(18,22), (8,21),(9,21),(10,21),(11,21),(12,21),(13,21),(14,21),(15,21),(16,21),(17,21),(18,21), (8,12), (9,12), (10,12), (11,12), (12,12), (13,12), (14,12), (15,12), (16,12), (17,12), (18,12), (8,11), (9,11), (10,11), (11,11), (12,11), (13,11), (14,11), (15,11), (16,11), (17,11), (18,11), (8,2), (9,2), (10,2), (11,2), (12,2), (13,2), (14,2),(15,2), (16,2), (17,2), (18,2), (8,1), (9,1), (10,1), (11,1), (12,1), (13,1), (14,1),(15,1), (16,1), (17,1), (18,1),]
-        # Cinta = [(1, 14), (2, 14), (3, 14),(1,9), (2,9), (3, 9)]
+        # Posiciones de cintas
+        posiciones_cintas = []
+        for y in [14, 9]:
+            for x in [28, 27, 25, 24]:
+                posiciones_cintas.append((x, y))
+            for x in [1, 2, 3]:
+                posiciones_cintas.append((x, y))
 
-        for id, pos in enumerate(posiciones_muebles):
-            mueble = Mueble(int(f"{num_agentes}0{id}") + 1, self)
-            self.grid.place_agent(mueble, pos)
-            self.schedule.add(mueble)  # Añadir la estación al schedules
-            posiciones_disponibles.remove(pos)
-
-        # Posicionar las estaciones en las esquinas 346765
-        posiciones_estaciones = [(0, 0), (0, N - 1), (M - 1, 0), (M - 1, N - 1)]
-        for id, pos in enumerate(posiciones_estaciones):
-            estacion = EstacionCarga(int(f"5000{id}") + 1, self)
-            self.grid.place_agent(estacion, pos)
-            self.schedule.add(estacion)  # Añadir la estación al schedules
-            if pos in posiciones_disponibles:
-                posiciones_disponibles.remove(pos)
-
-        print(f"{len(posiciones_estaciones)} estaciones de carga creadas.")
-
-        # Posicionamiento de celdas sucias
-        def condicion(pos):
-            fila, columna = pos
-            return 14 <= fila <= 18 and 6 <= columna <= 16
-
-        # 14 - 18 en x
-        # 6 - 16 en y
-
-        # posiciones_dispCacaPipi = [pos for _, *pos in self.grid.coord_iter() if condicion(pos)]
-        self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
+        posiciones_estanteriasG = []
+        valores_x = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+        valores_y = [22, 21, 12, 11, 2, 1]
+        for y in valores_y:
+            for x in valores_x:
+                posiciones_estanteriasG.append((x, y))
 
         posiciones_dispCacaPipi = [
-            # (15, 0),
-            # (15, 1),
-            # (15, 2),
-            # (15, 3),
-            # (15, 4),
-            # (15, 5),
-            # (16, 6),
-            # (16, 7),
-            # (16, 8),
-            # (16, 9),
-            # (16, 10),
-            # (16, 11),
-            # (16, 12),
-            # (16, 13),
-            # (16, 14),
-            # (16, 15),
-            # (16, 16),
-            # (17, 6),
-            # (17, 7),
-            # (17, 8),
-            # (17, 9),
-            # (17, 10),
-            # (17, 11),
-            # (17, 12),
-            # (17, 13),
-            # (17, 14),
-            # (17, 15),
-            # (17, 16),
             (22, 7),
             (23, 7),
             (24, 7),
@@ -505,6 +376,45 @@ class Habitacion(Model):
             (23, 14),
             (23, 9),
         ]
+
+        for id, pos in enumerate(posiciones_cintas):
+            cinta = Cinta(int(f"{num_agentes}200{id}") + 1, self)
+            self.grid.place_agent(cinta, pos)
+            self.schedule.add(cinta)
+            posiciones_disponibles.remove(pos)
+
+        for id, pos in enumerate(posiciones_estanteriasG):
+            estanteria = EstanteriaGrande(int(f"{num_agentes}100{id}") + 1, self)
+            self.grid.place_agent(estanteria, pos)
+            self.schedule.add(estanteria)
+            posiciones_disponibles.remove(pos)
+
+        # Posicionamiento de muebless
+        num_muebles = int(M * N * porc_muebles)
+
+        estanterias_chicas_pos = []
+        for y in [18, 15, 8, 5]:
+            for x in range(8, 19):
+                estanterias_chicas_pos.append((x, y))
+
+        for id, pos in enumerate(estanterias_chicas_pos):
+            estanteria_chica = EstanteriaChica(int(f"{num_agentes}00{id}") + 1, self)
+            self.grid.place_agent(estanteria_chica, pos)
+            self.schedule.add(estanteria_chica)
+            posiciones_disponibles.remove(pos)
+
+        posiciones_estaciones = [(0, 0), (0, N - 1), (M - 1, 0), (M - 1, N - 1)]
+        for id, pos in enumerate(posiciones_estaciones):
+            estacion = EstacionCarga(int(f"5000{id}") + 1, self)
+            self.grid.place_agent(estacion, pos)
+            self.schedule.add(estacion)  # Añadir la estación al schedules
+            if pos in posiciones_disponibles:
+                posiciones_disponibles.remove(pos)
+
+        print(f"{len(posiciones_estaciones)} estaciones de carga creadas.")
+
+        # posiciones_dispCacaPipi = [pos for _, *pos in self.grid.coord_iter() if condicion(pos)]
+        self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
         posiciones_celdas_sucias = self.random.sample(
             posiciones_dispCacaPipi, k=self.num_celdas_sucias

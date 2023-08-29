@@ -4,7 +4,7 @@ from .model import (
     Habitacion,
     RobotLimpieza,
     Celda,
-    Mueble,
+    EstanteriaChica,
     EstacionCarga,
     EstanteriaGrande,
     Cinta,
@@ -24,7 +24,7 @@ def agent_portrayal(agent):
             "text": f"{agent.carga}",
             "text_color": "black",
         }
-    elif isinstance(agent, Mueble):
+    elif isinstance(agent, EstanteriaChica):
         return {
             "Shape": "rect",
             "Filled": "true",
@@ -33,7 +33,7 @@ def agent_portrayal(agent):
             "w": 0.9,
             "h": 0.9,
         }
-    
+
     elif isinstance(agent, EstanteriaGrande):
         return {
             "Shape": "rect",
@@ -43,7 +43,7 @@ def agent_portrayal(agent):
             "w": 0.9,
             "h": 0.9,
         }
-    
+
     elif isinstance(agent, Cinta):
         return {
             "Shape": "rect",
@@ -128,5 +128,5 @@ model_params = {
 }
 
 server = mesa.visualization.ModularServer(
-    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9100
+    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9102
 )
