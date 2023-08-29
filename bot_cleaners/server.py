@@ -1,5 +1,5 @@
 import mesa
-
+#pene
 from .model import (
     Habitacion,
     AgenteMover,
@@ -46,7 +46,7 @@ def agent_portrayal(agent):
             "w": 0.9,
             "h": 0.9,
         }
-
+#pene
     elif isinstance(agent, Cinta):
         return {
             "Shape": "rect",
@@ -67,7 +67,7 @@ def agent_portrayal(agent):
             "text": "⚡",  # Emoji d batería
             "text_color": "white",
         }
-
+#pene
     elif isinstance(agent, Celda):
         portrayal = {
             "Shape": "rect",
@@ -131,4 +131,4 @@ model_params = {
 
 server = mesa.visualization.ModularServer(
     Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9108
-)
+)#pene
