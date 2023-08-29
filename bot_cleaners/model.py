@@ -3,6 +3,7 @@ from mesa.agent import Agent
 from mesa.space import MultiGrid
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
+from random import choice
 import numpy as np
 import heapq
 
