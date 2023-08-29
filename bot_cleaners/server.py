@@ -97,7 +97,7 @@ chart_celdas = mesa.visualization.ChartModule(
 model_params = {
     "num_agentes": mesa.visualization.Slider(
         "Número de Robots",
-        5,
+        2,
         2,
         MAX_NUMBER_ROBOTS,
         1,

@@ -6,6 +6,7 @@ from mesa.datacollection import DataCollector
 from random import choice
 import numpy as np
 import heapq
+import keyboard
 
 #pene comes chocas
 #pene
@@ -306,9 +307,17 @@ class AgenteMover(Agent):
                 self.mover(cagada_pos)
                 print("pos", self.pos, "cagadapos", cagada_pos)
                 #dtermna si estoy parado en la celda sucia igual q arriba con lo d los muebles chiquitos (eliminamos el limpiar celda)
+                # k = len(self.model.grid.get_cell_list_contents([self.pos]))
+
+                # for i in range(k-1):
+                #     if self.model.grid.get_cell_list_contents([self.pos])[i].sucia == True:
+                #         celda_actual = self.model.grid.get_cell_list_contents([self.pos])[i]
+
+                # print(self.model.grid.get_cell_list_contents([self.pos]))
+                
                 celda_actual = self.model.grid.get_cell_list_contents([self.pos])[0]
                 if isinstance(celda_actual, Celda) and celda_actual.sucia:
-                    celda_actual.sucia = False
+                    self.model.grid.remove_agent(celda_actual)
                     self.enCarga = True
         # Salir del método step
 
@@ -371,8 +380,8 @@ class Habitacion(Model):
                 posiciones_estanteriasG.append((x, y))
 
         posiciones_dispCacaPipi = []
-        v_x1 = [22, 23, 24, 25, 26, 27, 28]
-        v_y1 = [4, 5, 6, 7]
+        v_x1 = [23, 23, 24, 25, 26, 27, 28]
+        v_y1 = [9, 5, 6, 7]
         for y in v_y1:
             for x in v_x1:
                 posiciones_dispCacaPipi.append((x, y))
@@ -424,26 +433,21 @@ class Habitacion(Model):
         self.schedule.step()
 
         
-        self.step_counter += 1
-        
         self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
         posiciones_celdas_sucias = self.random.sample(
             posiciones_dispCacaPipi, k=self.num_celdas_sucias
         )
 
-        for id, pos in enumerate(posiciones_disponibles):
-            suciedad = pos in posiciones_dispCacaPipi
-            celda = Celda(int(f"{num_agentes}{id}") + 1, self, suciedad)
-            self.schedule.add(celda)
-            self.grid.place_agent(celda, pos)
 
-        if self.step_counter == 50:
-            for id, pos in enumerate(posiciones_disponibles):
-                suciedad = pos in posiciones_dispCacaPipi
-                celda = Celda(int(f"{num_agentes}{id}") + 1, self, suciedad)
-                self.schedule.add(celda)
-                self.grid.place_agent(celda, pos)
+        new_dirty_cell = Celda(1000, self)
+        new_dirty_cell.sucia = True  # Suponiendo que el atributo para suciedad se llama 'sucia'
+        self.schedule.add(new_dirty_cell)
+        self.grid.place_agent(new_dirty_cell, (23, 14))
+        new_dirty_cell = Celda(2000, self)
+        new_dirty_cell.sucia = True  # Suponiendo que el atributo para suciedad se llama 'sucia'
+        self.schedule.add(new_dirty_cell)
+        self.grid.place_agent(new_dirty_cell, (23, 9))
 
         # Posicionamiento de agentes robot
         if modo_pos_inicial == "Aleatoria":
@@ -476,10 +480,30 @@ class Habitacion(Model):
                 )
                 robot.mover_hacia_estacion(estacion_cercana)
 
+    
     def step(self):
         self.datacollector.collect(self)
 
         self.schedule.step()
+
+         # Suponiendo que la ubicación específica es (x, y)
+        x, y = 23,14   # Reemplaza con las coordenadas deseadas
+        x2, y2 = 23,9
+        self.step_counter += 1
+
+        
+        if keyboard.is_pressed('g'):
+
+            new_dirty_cell = Celda(1001+self.step_counter, self)  # Usar un ID fijo
+            new_dirty_cell.sucia = True
+            self.schedule.add(new_dirty_cell)
+            self.grid.place_agent(new_dirty_cell, (x, y))
+            
+            new_dirty_cell = Celda(2001+self.step_counter, self)  # Usar otro ID fijo
+            new_dirty_cell.sucia = True
+            self.schedule.add(new_dirty_cell)
+            self.grid.place_agent(new_dirty_cell, (x2, y2))
+
 
     def todoLimpio(self):
         for content, x, y in self.grid.coord_iter():
