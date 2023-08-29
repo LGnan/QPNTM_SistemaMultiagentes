@@ -1,5 +1,6 @@
 import mesa
-#pene
+
+# pene
 from .model import (
     Habitacion,
     AgenteMover,
@@ -15,26 +16,27 @@ MAX_NUMBER_ROBOTS = 20
 
 def agent_portrayal(agent):
     if isinstance(agent, AgenteMover):
+        texto = f"{agent.carga}" if not agent.enCarga else "📦"
         return {
             "Shape": "circle",
             "Filled": "false",
-            "Color": agent.color,  #pa q tengan diferente qolor
+            "Color": agent.color,  # pa q tengan diferente qolo
             "Layer": 1,
             "r": 1.0,
-            "text": f"{agent.carga}",
+            "text": texto,
             "text_color": "white",
         }
     elif isinstance(agent, EstanteriaChica):
-        color = "black" if not agent.enUso else "blue" 
-        text = "" if not agent.enUso else "📦" 
+        color = "black" if not agent.enUso else "blue"
+        text = "" if not agent.enUso else "📦"
         return {
             "Shape": "rect",
             "Filled": "true",
             "Color": color,
             "Layer": 0,
             "w": 0.9,
-            "h": 0.9,  
-            "text" : text
+            "h": 0.9,
+            "text": text,
         }
 
     elif isinstance(agent, EstanteriaGrande):
@@ -46,7 +48,7 @@ def agent_portrayal(agent):
             "w": 0.9,
             "h": 0.9,
         }
-#pene
+    # pene
     elif isinstance(agent, Cinta):
         return {
             "Shape": "rect",
@@ -67,7 +69,7 @@ def agent_portrayal(agent):
             "text": "⚡",  # Emoji d batería
             "text_color": "white",
         }
-#pene
+    # pene
     elif isinstance(agent, Celda):
         portrayal = {
             "Shape": "rect",
@@ -86,7 +88,7 @@ def agent_portrayal(agent):
         return portrayal
 
 
-grid = mesa.visualization.CanvasGrid(agent_portrayal, 32, 24, 500, 500)
+grid = mesa.visualization.CanvasGrid(agent_portrayal, 32, 24, 450, 435)
 chart_celdas = mesa.visualization.ChartModule(
     [{"Label": "CeldasSucias", "Color": "#36A2EB", "label": "Celdas Sucias"}],
     50,
@@ -97,7 +99,7 @@ chart_celdas = mesa.visualization.ChartModule(
 model_params = {
     "num_agentes": mesa.visualization.Slider(
         "Número de Robots",
-        5,
+        4,
         2,
         MAX_NUMBER_ROBOTS,
         1,
@@ -131,4 +133,4 @@ model_params = {
 
 server = mesa.visualization.ModularServer(
     Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9108
-)#pene
+)  # pene

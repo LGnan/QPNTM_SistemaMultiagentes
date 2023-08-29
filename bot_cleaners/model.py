@@ -7,20 +7,23 @@ from random import choice
 import numpy as np
 import heapq
 
-#pene comes chocas
-#pene
-#chupas
+# pene comes chocas
+# pene
+# chupas
+
 
 class EstacionCarga(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+
 
 class Celda(Agent):
     def __init__(self, unique_id, model, suciedad: bool = False):
         super().__init__(unique_id, model)
         self.sucia = suciedad
 
-#pene
+
+# pene
 class EstanteriaChica(Agent):  # estantería chica
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
@@ -40,7 +43,7 @@ class Cinta(Agent):  # estantería cinta
 class AgenteMover(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        self.color = choice(['Gray', 'Magenta', 'Red', 'Green', 'Blue', 'Black'])
+        self.color = choice(["Gray", "Magenta", "Red", "Green", "Blue", "Black"])
         self.sig_pos = None
         self.movimientos = 0
         self.carga = 100
@@ -59,10 +62,9 @@ class AgenteMover(Agent):
             self.pos = next_pos
             self.sig_pos = next_pos
 
-
     def distancia_manhattan(self, pos1, pos2):
         if pos2 is None:
-            return float("inf")  
+            return float("inf")
         x1, y1 = pos1
         x2, y2 = pos2
         return abs(x2 - x1) + abs(y2 - y1)
@@ -80,7 +82,6 @@ class AgenteMover(Agent):
         ]
 
         if not estanterias:
-            
             return None
 
         estanteria_cercana = min(
@@ -97,7 +98,6 @@ class AgenteMover(Agent):
         ]
 
         if not cintas:
-            
             return None
 
         cinta_cercana = min(
@@ -114,7 +114,6 @@ class AgenteMover(Agent):
         ]
 
         if not estaciones:
-            
             return None  # si no hay estaciones d carga
 
         # calcula la distancia entre los puntos del robot actual y la de cada posicion d carga (lista) y agarra el minimo4
@@ -133,9 +132,8 @@ class AgenteMover(Agent):
         ]
 
         if not muebles:
-            
             return None  # si no hay estaciones d carga
-        
+
         mueble_cercano = min(
             muebles, key=lambda pos: self.distancia_euclidiana(self.pos, pos)
         )
@@ -150,7 +148,6 @@ class AgenteMover(Agent):
         ]
 
         if not cagadas_pos:
-            
             return None
 
         cagada_cercana = min(
@@ -177,22 +174,28 @@ class AgenteMover(Agent):
             for next_cell in self.model.grid.get_neighborhood(
                 current, moore=True, include_center=False
             ):
-                
-                if any(isinstance(agent, AgenteMover) for agent in self.model.grid.get_cell_list_contents([next_cell])):
-                    continue  
+                if any(
+                    isinstance(agent, AgenteMover)
+                    for agent in self.model.grid.get_cell_list_contents([next_cell])
+                ):
+                    continue
 
-                if any(isinstance(agent, EstanteriaChica) and agent.enUso == True for agent in self.model.grid.get_cell_list_contents([next_cell]) ):
-                    continue  
+                if any(
+                    isinstance(agent, EstanteriaChica) and agent.enUso == True
+                    for agent in self.model.grid.get_cell_list_contents([next_cell])
+                ):
+                    continue
 
                 tentative_g_score = g_score[current] + 1
                 if tentative_g_score < g_score.get(next_cell, float("inf")):
                     came_from[next_cell] = current
                     g_score[next_cell] = tentative_g_score
-                    f_score = tentative_g_score + self.distancia_manhattan(next_cell, goal)
+                    f_score = tentative_g_score + self.distancia_manhattan(
+                        next_cell, goal
+                    )
                     heapq.heappush(open_list, (f_score, next_cell))
 
         return None
-
 
     def mover_hacia_estacion(self, estacion_pos):
         path = self.a_star(self.pos, estacion_pos)
@@ -208,12 +211,11 @@ class AgenteMover(Agent):
             return
         path = self.a_star(self.pos, mueble_pos)
 
-        if path: 
+        if path:
             next_pos = path[0]
             self.model.grid.move_agent(self, next_pos)
             self.pos = next_pos
             self.sig_pos = next_pos
-
 
     def seleccionar_nueva_pos(self, lista_de_vecinos):
         self.sig_pos = self.random.choice(lista_de_vecinos).pos
@@ -261,17 +263,17 @@ class AgenteMover(Agent):
         if self.enCarga == True:
             self.mover_hacia_mueble(mueble_cercano_pos)
 
-            if isinstance(self.model.grid.get_cell_list_contents([self.pos])[0], EstanteriaChica):
+            if isinstance(
+                self.model.grid.get_cell_list_contents([self.pos])[0], EstanteriaChica
+            ):
                 self.enCarga = False
                 estanteria_chica = self.model.grid.get_cell_list_contents([self.pos])[0]
                 estanteria_chica.enUso = True
                 print(estanteria_chica.enUso, "estanteria en uso si o no")
                 print(estanteria_chica, "estanteria_chica")
 
-
             return
 
-       
         if any(
             isinstance(agent, EstacionCarga)
             for agent in self.model.grid.get_cell_list_contents([self.pos])
@@ -303,17 +305,17 @@ class AgenteMover(Agent):
                 self.mover(cagada_pos)
 
         else:
-                self.mover(cagada_pos)
-                print("pos", self.pos, "cagadapos", cagada_pos)
-                #dtermna si estoy parado en la celda sucia igual q arriba con lo d los muebles chiquitos (eliminamos el limpiar celda)
-                celda_actual = self.model.grid.get_cell_list_contents([self.pos])[0]
-                if isinstance(celda_actual, Celda) and celda_actual.sucia:
-                    celda_actual.sucia = False
-                    self.enCarga = True
+            self.mover(cagada_pos)
+            print("pos", self.pos, "cagadapos", cagada_pos)
+            # dtermna si estoy parado en la celda sucia igual q arriba con lo d los muebles chiquitos (eliminamos el limpiar celda)
+            celda_actual = self.model.grid.get_cell_list_contents([self.pos])[0]
+            if isinstance(celda_actual, Celda) and celda_actual.sucia:
+                celda_actual.sucia = False
+                self.enCarga = True
         # Salir del método step
 
     def advance(self):
-        if self.sig_pos is not None:  
+        if self.sig_pos is not None:
             if self.carga == 100:
                 self.previous_pos = self.pos
                 self.movimientos = 0
@@ -329,22 +331,19 @@ class Habitacion(Model):
         self,
         M: int,
         N: int,
-        num_agentes: int = 5,
+        num_agentes: int = 4,
         porc_celdas_sucias: float = 0.6,
         porc_muebles: float = 0.1,
         modo_pos_inicial: str = "Fija",
         step_counter=0,
     ):
-        
-
         self.datacollector = DataCollector(
-                model_reporters={
-                    "Grid": get_grid,
-                    "Cargas": get_cargas,
-                    "CeldasSucias": get_sucias,
-                },
-            )
-            
+            model_reporters={
+                "Grid": get_grid,
+                "Cargas": get_cargas,
+                "CeldasSucias": get_sucias,
+            },
+        )
 
         self.num_agentes = num_agentes
         self.porc_celdas_sucias = porc_celdas_sucias
@@ -376,10 +375,10 @@ class Habitacion(Model):
         for y in v_y1:
             for x in v_x1:
                 posiciones_dispCacaPipi.append((x, y))
-        v_i = [(23, 14), (23, 9)]  
-        # 
+        v_i = [(23, 14), (23, 9)]
+        #
         for coord in v_i:
-            posiciones_dispCacaPipi.append(coord)  
+            posiciones_dispCacaPipi.append(coord)
 
         for id, pos in enumerate(posiciones_cintas):
             cinta = Cinta(int(f"{num_agentes}200{id}") + 1, self)
@@ -407,7 +406,7 @@ class Habitacion(Model):
             self.schedule.add(estanteria_chica)
             posiciones_disponibles.remove(pos)
 
-        posiciones_estaciones = [(0, 0), (0, N - 1), (M - 1, 0), (M - 1, N - 1)]
+        posiciones_estaciones = [(8, 0), (18, 0), (8, 23), (18, 23)]
         for id, pos in enumerate(posiciones_estaciones):
             estacion = EstacionCarga(int(f"5000{id}") + 1, self)
             self.grid.place_agent(estacion, pos)
@@ -423,9 +422,8 @@ class Habitacion(Model):
 
         self.schedule.step()
 
-        
         self.step_counter += 1
-        
+
         self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
         posiciones_celdas_sucias = self.random.sample(
