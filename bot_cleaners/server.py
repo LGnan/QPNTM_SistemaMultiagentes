@@ -4,11 +4,13 @@ import mesa
 from .model import (
     Habitacion,
     AgenteMover,
+    AgenteRecoger,
     Celda,
     EstanteriaChica,
     EstacionCarga,
     EstanteriaGrande,
     Cinta,
+    Cinta2,
 )
 
 MAX_NUMBER_ROBOTS = 20
@@ -17,6 +19,17 @@ MAX_PACKAGES_RATE = 30
 
 def agent_portrayal(agent):
     if isinstance(agent, AgenteMover):
+        texto = f"{agent.carga}" if not agent.enCarga else "📦"
+        return {
+            "Shape": "circle",
+            "Filled": "false",
+            "Color": agent.color,  # pa q tengan diferente qolo
+            "Layer": 1,
+            "r": 1.0,
+            "text": texto,
+            "text_color": "white",
+        }
+    elif isinstance(agent, AgenteRecoger):
         texto = f"{agent.carga}" if not agent.enCarga else "📦"
         return {
             "Shape": "circle",
@@ -55,6 +68,15 @@ def agent_portrayal(agent):
             "Shape": "rect",
             "Filled": "true",
             "Color": "blue",
+            "Layer": 0,
+            "w": 0.9,
+            "h": 0.9,
+        }
+    elif isinstance(agent, Cinta2):
+        return {
+            "Shape": "rect",
+            "Filled": "true",
+            "Color": "HotPink",
             "Layer": 0,
             "w": 0.9,
             "h": 0.9,
@@ -142,5 +164,5 @@ model_params = {
 }
 
 server = mesa.visualization.ModularServer(
-    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9108
+    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9109
 )  # pene
