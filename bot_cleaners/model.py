@@ -365,7 +365,7 @@ class Habitacion(Model):
         # Posiciones de cinta
         posiciones_cintas = []
         for y in [14, 9]:
-            for x in [28, 27, 25, 24]:
+            for x in [28, 27, 26, 25, 24]:
                 posiciones_cintas.append((x, y))
             for x in [1, 2, 3]:
                 posiciones_cintas.append((x, y))
