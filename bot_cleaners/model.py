@@ -6,7 +6,6 @@ from mesa.datacollection import DataCollector
 from random import choice
 import numpy as np
 import heapq
-import keyboard
 
 class EstacionCarga(Agent):
     def __init__(self, unique_id, model):
