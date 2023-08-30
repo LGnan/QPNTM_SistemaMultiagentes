@@ -24,6 +24,7 @@ class EstanteriaChica(Agent):  # estantería chica
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.enUso = False
+        self.idCaja = None
 
 
 class EstanteriaGrande(Agent):  # estantería grande
@@ -34,7 +35,6 @@ class EstanteriaGrande(Agent):  # estantería grande
 class Cinta(Agent):  # estantería cinta
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-
 
 class AgenteMover(Agent):
     def __init__(self, unique_id, model):
@@ -183,6 +183,12 @@ class AgenteMover(Agent):
                 ):
                     continue
 
+                if any(
+                    isinstance(agent, EstanteriaGrande)
+                    for agent in self.model.grid.get_cell_list_contents([next_cell])
+                ):
+                    continue
+
                 tentative_g_score = g_score[current] + 1
                 if tentative_g_score < g_score.get(next_cell, float("inf")):
                     came_from[next_cell] = current
@@ -266,6 +272,8 @@ class AgenteMover(Agent):
                 self.enCarga = False
                 estanteria_chica = self.model.grid.get_cell_list_contents([self.pos])[0]
                 estanteria_chica.enUso = True
+                estanteria_chica.idCaja = self.idCaja
+                print(estanteria_chica.idCaja)
                 print(estanteria_chica.enUso, "estanteria en uso si o no")
                 print(estanteria_chica, "estanteria_chica")
 
@@ -282,8 +290,7 @@ class AgenteMover(Agent):
 
             if self.tiempo_en_estacion >= 2 and self.carga <= 100:
                 if self.previous_pos is not None:
-                    self.mover(self.previous_pos)
-                self.tiempo_en_estacion = 0
+                        self.mover(cagada_pos)
             return
 
         if self.carga <= 40:
@@ -292,14 +299,14 @@ class AgenteMover(Agent):
                 self.carga = 100
 
             else:
+                
                 self.mover(estacion_pos)  # se tira el astar4
 
         elif len(celdas_sucias) == 0:
+            self.mover(cagada_pos)
             if cagada_pos == None:
                 self.mover(estacion_pos)
-            else:
-                # Mover hacia paquete
-                self.mover(cagada_pos)
+            
 
         else:
                 self.mover(cagada_pos)
@@ -330,6 +337,7 @@ class Habitacion(Model):
         M: int,
         N: int,
         num_agentes: int = 4,
+        rate_packages: int =10,
         porc_celdas_sucias: float = 0.6,
         porc_muebles: float = 0.1,
         modo_pos_inicial: str = "Fija",
@@ -347,6 +355,7 @@ class Habitacion(Model):
         self.porc_celdas_sucias = porc_celdas_sucias
         self.porc_muebles = porc_muebles
         self.step_counter = step_counter
+        self.rate_packages = rate_packages
         self.id_counter = 1
         self.grid = MultiGrid(M, N, False)
         self.schedule = SimultaneousActivation(self)
@@ -380,13 +389,13 @@ class Habitacion(Model):
             posiciones_dispCacaPipi.append(coord)
 
         for id, pos in enumerate(posiciones_cintas):
-            cinta = Cinta(int(f"{num_agentes}200{id}") + 1, self)
+            cinta = Cinta(int(f"6200{id}") + 1, self)
             self.grid.place_agent(cinta, pos)
             self.schedule.add(cinta)
             posiciones_disponibles.remove(pos)
 
         for id, pos in enumerate(posiciones_estanteriasG):
-            estanteria = EstanteriaGrande(int(f"{num_agentes}100{id}") + 1, self)
+            estanteria = EstanteriaGrande(int(f"7100{id}") + 1, self)
             self.grid.place_agent(estanteria, pos)
             self.schedule.add(estanteria)
             posiciones_disponibles.remove(pos)
@@ -400,7 +409,7 @@ class Habitacion(Model):
                 estanterias_chicas_pos.append((x, y))
 
         for id, pos in enumerate(estanterias_chicas_pos):
-            estanteria_chica = EstanteriaChica(int(f"{num_agentes}00{id}") + 1, self)
+            estanteria_chica = EstanteriaChica(int(f"1000{id}") + 1, self)
             self.grid.place_agent(estanteria_chica, pos)
             self.schedule.add(estanteria_chica)
             posiciones_disponibles.remove(pos)
@@ -424,10 +433,6 @@ class Habitacion(Model):
         
         self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
-        posiciones_celdas_sucias = self.random.sample(
-            posiciones_dispCacaPipi, k=self.num_celdas_sucias
-        )
-
 
         new_dirty_cell = Celda(3000, self)
         new_dirty_cell.sucia = True  # Suponiendo que el atributo para suciedad se llama 'sucia'
@@ -445,7 +450,7 @@ class Habitacion(Model):
                 posiciones_disponibles, k=num_agentes
             )
         else:  # 'Fija'
-            pos_inicial_robots = [(0, N - 1)] * num_agentes
+            pos_inicial_robots = [(21, 14), (21, 9)] 
 
         for id in range(num_agentes):
             robot = AgenteMover(id, self)
@@ -482,7 +487,7 @@ class Habitacion(Model):
         self.step_counter += 1
 
         
-        if keyboard.is_pressed('g'):
+        if self.step_counter%self.rate_packages == 0:
 
             new_dirty_cell = Celda(3001+self.id_counter, self)  # Usar un ID fijo
             new_dirty_cell.sucia = True

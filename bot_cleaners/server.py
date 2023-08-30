@@ -12,6 +12,7 @@ from .model import (
 )
 
 MAX_NUMBER_ROBOTS = 20
+MAX_PACKAGES_RATE = 30
 
 
 def agent_portrayal(agent):
@@ -105,6 +106,14 @@ model_params = {
         1,
         description="Escoge cuántos robots deseas implementar en el modelo",
     ),
+    "rate_packages": mesa.visualization.Slider(
+        "Steps por paquete",
+        15,
+        10,
+        MAX_PACKAGES_RATE,
+        1,
+        description="Escoge cuántos robots deseas implementar en el modelo",
+    ),
     "porc_celdas_sucias": mesa.visualization.Slider(
         "Porcentaje de Celdas Sucias",
         0.3,
@@ -127,6 +136,7 @@ model_params = {
         ["Fija", "Aleatoria"],
         "Seleciona la forma se posicionan los robots",
     ),
+    
     "M": 32,
     "N": 24,
 }
