@@ -45,14 +45,44 @@ class AgenteRecoger(Agent):
     
     def mover(self, cinta_pos):
         if cinta_pos is None:
+            print("Destino es None")
             return
+
+        print(f"Calculando path desde {self.pos} hasta {cinta_pos}")
         path = self.a_star(self.pos, cinta_pos)
 
         if path:
+            print(f"Path encontrado: {path}")
             next_pos = path[0]
             self.model.grid.move_agent(self, next_pos)
             self.pos = next_pos
             self.sig_pos = next_pos
+            print(f"Me he movido a {self.pos}")
+        else:
+            print("No se encontró path")
+
+    def estanteria_chica_mas_cercana(self):
+
+        estanterias = [
+            agent
+            for agent in self.model.schedule.agents
+            if isinstance(agent, EstanteriaChica)
+        ]
+
+        estanterias_en_uso = [estanteria for estanteria in estanterias if estanteria.enUso == True]
+
+        if not estanterias or not estanterias_en_uso:
+            return None
+
+        estanteria_cercana = min(
+            estanterias_en_uso,
+            key=lambda estanteria: self.distancia_euclidiana(self.pos, estanteria.pos)
+        )
+
+        return estanteria_cercana.pos
+
+
+
 
     def estacion_carga_mas_cercana(self):
         estaciones = [
@@ -112,7 +142,7 @@ class AgenteRecoger(Agent):
                     continue
 
                 if any(
-                    isinstance(agent, EstanteriaChica) and agent.enUso == True
+                    isinstance(agent, EstanteriaChica) and agent.enUso == False
                     for agent in self.model.grid.get_cell_list_contents([next_cell])
                 ):
                     continue
@@ -127,7 +157,7 @@ class AgenteRecoger(Agent):
                 if tentative_g_score < g_score.get(next_cell, float("inf")):
                     came_from[next_cell] = current
                     g_score[next_cell] = tentative_g_score
-                    f_score = tentative_g_score + self.distancia_manhattan(
+                    f_score = tentative_g_score + self.distancia_euclidiana(
                         next_cell, goal
                     )
                     heapq.heappush(open_list, (f_score, next_cell))
@@ -135,9 +165,17 @@ class AgenteRecoger(Agent):
         return None
     
     def step(self):
-            
+        
         cinta_cerca = self.cinta2_mas_cercana()
+        print(cinta_cerca, "aqi esta la cinta mas cercana")
+
         estacion_pos = self.estacion_carga_mas_cercana()
+        
+        estanteria_en_uso = self.estanteria_chica_mas_cercana()
+        print(estanteria_en_uso, "estanteria en uso")
+
+        if self.enCarga == True and self.carga >= 40:
+            self.mover(cinta_cerca)
 
         if any(
             isinstance(agent, EstacionCarga)
@@ -145,20 +183,48 @@ class AgenteRecoger(Agent):
         ):
             self.carga += 50
             self.carga = min(100, self.carga)
-
             self.tiempo_en_estacion += 1
 
             if self.tiempo_en_estacion >= 2 and self.carga <= 100:
                 if self.previous_pos is not None:
-                        self.mover(cinta_cerca)
+                        self.mover(estanteria_en_uso)
             return
-
-        if self.carga <= 40:
+        
+        elif self.carga <= 40:
             estacion_pos = self.estacion_carga_mas_cercana()
             if self.pos == estacion_pos:
                 self.carga = 100
-
             else:
-                
-                self.mover(estacion_pos)  # se tira el astar4
+                self.mover(estacion_pos)
+                print(f"Me estoy moviendo hacia la estacion d carga {estanteria_en_uso}")
 
+        
+        elif estanteria_en_uso is not None and self.enCarga == False:
+                self.mover(estanteria_en_uso)
+                print(f"Me deberia estar moviendo hacia la estantería en uso en {estanteria_en_uso}")
+
+                if isinstance(
+                self.model.grid.get_cell_list_contents([self.pos])[0], EstanteriaChica
+                ):
+                    self.enCarga = True
+                    print(self.enCarga, "en carga cacacaca")
+                    estanteria_chica = self.model.grid.get_cell_list_contents([self.pos])[0]
+                    estanteria_chica.enUso = False
+                    
+        
+        elif isinstance(
+                self.model.grid.get_cell_list_contents([self.pos])[0], Cinta2
+                ):
+                    self.enCarga = False
+
+
+    def advance(self):
+        if self.sig_pos is not None:
+            if self.carga == 100:
+                self.previous_pos = self.pos
+                self.movimientos = 0
+            if self.pos != self.sig_pos:
+                self.movimientos += 1
+            if self.carga > 0:
+                self.carga -= 1
+                self.model.grid.move_agent(self, self.sig_pos)
