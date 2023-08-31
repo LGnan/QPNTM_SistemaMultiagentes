@@ -19,7 +19,7 @@ from .Agentes import (
 class AgenteMover(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        self.color = choice(["Gray", "Magenta", "Red", "Green", "Blue", "Black"])
+        self.color = choice(["Magenta", "Red", "Green", "Blue", "Black"])
         self.sig_pos = None
         self.movimientos = 0
         self.carga = 100
@@ -242,6 +242,7 @@ class AgenteMover(Agent):
         estacion_pos = self.estacion_carga_mas_cercana()
         mueble_cercano_pos = self.mueble_mas_cercano()
 
+        
         # Verificar si el robot está llevando una carga
         if self.enCarga == True:
             self.mover_hacia_mueble(mueble_cercano_pos)
