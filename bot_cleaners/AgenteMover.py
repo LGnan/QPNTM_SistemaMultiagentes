@@ -253,6 +253,7 @@ class AgenteMover(Agent):
                 self.enCarga = False
                 estanteria_chica = self.model.grid.get_cell_list_contents([self.pos])[0]
                 estanteria_chica.enUso = True
+                print("id caja de la estanteria", estanteria_chica.idCaja)
                 estanteria_chica.idCaja = self.idCaja
                 print(estanteria_chica.idCaja)
                 print(estanteria_chica.enUso, "estanteria en uso si o no")
@@ -298,6 +299,7 @@ class AgenteMover(Agent):
                     self.idCaja = celda_actual.unique_id
                     self.model.grid.remove_agent(celda_actual)
                     self.enCarga = True
+
         # Salir del método step
 
     def advance(self):

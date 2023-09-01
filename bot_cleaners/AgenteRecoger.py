@@ -30,6 +30,7 @@ class AgenteRecoger(Agent):
         self.previous_pos = None
         self.tiempo_en_estacion = 0
         self.enCarga = False
+        self.idCaja = None
         
     def distancia_euclidiana(self, pos1, pos2):
         x1, y1 = pos1
@@ -210,8 +211,9 @@ class AgenteRecoger(Agent):
                     print(self.enCarga, "en carga cacacaca")
                     estanteria_chica = self.model.grid.get_cell_list_contents([self.pos])[0]
                     estanteria_chica.enUso = False
-                    
-        
+                    print(estanteria_chica.idCaja, "aqui esta la caja en estanteria chicalol")
+                    self.idCaja = estanteria_chica.idCaja 
+                    print("idCaja recogido:", self.idCaja)
         elif isinstance(
                 self.model.grid.get_cell_list_contents([self.pos])[0], Cinta2
                 ):
