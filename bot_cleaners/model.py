@@ -157,7 +157,9 @@ class Habitacion(Model):
         else:  # 'Fija'
             pos_inicial_robots = [(21, 14), (21, 9)] 
 
-        for id in range(num_agentes):
+        for id in range(min(num_agentes, len(pos_inicial_robots))):
+            print(f"Length of pos_inicial_robots: {len(pos_inicial_robots)}")  # Debug line
+            print(f"Current id: {id}")
             robot = AgenteMover(id, self)
             self.grid.place_agent(robot, pos_inicial_robots[id])
             self.schedule.add(robot)
@@ -169,10 +171,10 @@ class Habitacion(Model):
         else:  # 'Fija'
             pos_inicial_robots = [(21, 14), (21, 9)] 
         
-        for id in range(num_agentes, num_agentes2):
+        for id in range(num_agentes, min(num_agentes2, len(pos_inicial_robots))):
             robot = AgenteRecoger(id, self)
             self.grid.place_agent(robot, pos_inicial_robots[id])
-            self.schedule.add(robot)    
+            self.schedule.add(robot)
 
         self.datacollector = DataCollector(
             model_reporters={
