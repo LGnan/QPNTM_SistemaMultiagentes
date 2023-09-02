@@ -7,6 +7,7 @@ from random import choice
 import numpy as np
 import heapq
 
+
 from .AgenteMover import (
     AgenteMover,
 )
@@ -31,6 +32,10 @@ class AgenteRecoger(Agent):
         self.tiempo_en_estacion = 0
         self.enCarga = False
         self.idCaja = None
+        self.cajaEnCarga = None
+        self.cajaEscogida = False
+        self.idEscogida = None
+        
         
     def distancia_euclidiana(self, pos1, pos2):
         x1, y1 = pos1
@@ -45,6 +50,7 @@ class AgenteRecoger(Agent):
         return abs(x2 - x1) + abs(y2 - y1)    
     
     def mover(self, cinta_pos):
+
         if cinta_pos is None:
             print("Destino es None")
             return
@@ -62,25 +68,42 @@ class AgenteRecoger(Agent):
         else:
             print("No se encontró path")
 
-    def estanteria_chica_mas_cercana(self):
+    def mover_hacia_mueble_cinta(self, cinta_pos, caja):
+        if cinta_pos is None:
+            return
+        path = self.a_star(self.pos, cinta_pos)
 
+        print("este es el path d la caja", path)
+
+        if path:
+            next_pos = path[0]
+            self.model.grid.move_agent(caja, next_pos)  # Mueve solo la caja a la siguiente posición
+            caja.pos = next_pos  # Actualiza la posición de la caja
+            print(caja.pos, "soy la caja y m estoy moviendo alaverga")
+
+
+    def estanteria_chica_mas_cercana(self,cajas,caja_escogida_bool):
+
+        if caja_escogida_bool == False:
+            self.idEscogida = np.random.choice(cajas)
         estanterias = [
             agent
             for agent in self.model.schedule.agents
             if isinstance(agent, EstanteriaChica)
         ]
 
-        estanterias_en_uso = [estanteria for estanteria in estanterias if estanteria.enUso == True]
+        estanteria_id = [estanteria for estanteria in estanterias if estanteria.idCaja == self.idEscogida]
 
-        if not estanterias or not estanterias_en_uso:
-            return None
+        if estanteria_id == None or estanteria_id == []:
+            self.idEscogida = np.random.choice(cajas)
+            estanteria_id = [estanteria for estanteria in estanterias if estanteria.idCaja == self.idEscogida]
+            return estanteria_id[0].pos
 
-        estanteria_cercana = min(
-            estanterias_en_uso,
-            key=lambda estanteria: self.distancia_euclidiana(self.pos, estanteria.pos)
-        )
-
-        return estanteria_cercana.pos
+        # estanteria_cercana = min(
+        #     estanterias_en_uso,
+        #     key=lambda estanteria: self.distancia_euclidiana(self.pos, estanteria.pos)
+        # )
+        return estanteria_id[0].pos
 
 
 
@@ -166,17 +189,35 @@ class AgenteRecoger(Agent):
         return None
     
     def step(self):
+
         
+        estanterias = [
+            agent
+            for agent in self.model.schedule.agents
+            if isinstance(agent, EstanteriaChica)
+        ]
+
+        estanterias_en_uso = [estanteria.idCaja for estanteria in estanterias if estanteria.enUso == True]
+        
+        
+        if estanterias_en_uso == []:
+            estanterias_en_uso = None
+            estanteria_en_uso = None
+
+        print(estanterias_en_uso , "MENSAJE DE ESTANTERIAS EN USO")
         cinta_cerca = self.cinta2_mas_cercana()
         print(cinta_cerca, "aqi esta la cinta mas cercana")
 
         estacion_pos = self.estacion_carga_mas_cercana()
         
-        estanteria_en_uso = self.estanteria_chica_mas_cercana()
-        print(estanteria_en_uso, "estanteria en uso")
+        if estanterias_en_uso != [] and estanterias_en_uso != None:
+            estanteria_en_uso = self.estanteria_chica_mas_cercana(estanterias_en_uso,self.cajaEscogida)
+            self.cajaEscogida = True
+            print(estanteria_en_uso, "estanteria en uso")
 
         if self.enCarga == True and self.carga >= 40:
             self.mover(cinta_cerca)
+            self.mover_hacia_mueble_cinta(cinta_cerca,self.cajaEnCarga)
 
         if any(
             isinstance(agent, EstacionCarga)
@@ -210,14 +251,19 @@ class AgenteRecoger(Agent):
                     self.enCarga = True
                     print(self.enCarga, "en carga cacacaca")
                     estanteria_chica = self.model.grid.get_cell_list_contents([self.pos])[0]
+                    caja = self.model.grid.get_cell_list_contents([self.pos])[1]
+                    self.cajaEnCarga = caja
                     estanteria_chica.enUso = False
                     print(estanteria_chica.idCaja, "aqui esta la caja en estanteria chicalol")
                     self.idCaja = estanteria_chica.idCaja 
                     print("idCaja recogido:", self.idCaja)
+                    self.mover_hacia_mueble_cinta(cinta_cerca,self.cajaEnCarga)
+
         elif isinstance(
                 self.model.grid.get_cell_list_contents([self.pos])[0], Cinta2
                 ):
                     self.enCarga = False
+                    self.cajaEscogida = False
 
 
     def advance(self):

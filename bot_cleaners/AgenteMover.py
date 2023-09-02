@@ -27,6 +27,7 @@ class AgenteMover(Agent):
         self.tiempo_en_estacion = 0
         self.enCarga = False
         self.idCaja = None
+        self.cajaEnCarga = None
 
     def mover(self, cinta_pos):
         if cinta_pos is None:
@@ -194,11 +195,29 @@ class AgenteMover(Agent):
             return
         path = self.a_star(self.pos, mueble_pos)
 
+        print("este es el path dl puto agente", path)
+
         if path:
             next_pos = path[0]
             self.model.grid.move_agent(self, next_pos)
             self.pos = next_pos
             self.sig_pos = next_pos
+
+    def mover_hacia_mueble_caja(self, mueble_pos, caja):
+        if mueble_pos is None:
+            return
+        path = self.a_star(self.pos, mueble_pos)
+
+        print("este es el path d la caja", path)
+
+        if path:
+            next_pos = path[0]
+            self.model.grid.move_agent(caja, next_pos)  # Mueve solo la caja a la siguiente posición
+            caja.pos = next_pos  # Actualiza la posición de la caja
+            print(caja.pos, "soy la caja y m estoy moviendo alaverga")
+
+
+
 
     def seleccionar_nueva_pos(self, lista_de_vecinos):
         self.sig_pos = self.random.choice(lista_de_vecinos).pos
@@ -243,20 +262,31 @@ class AgenteMover(Agent):
         mueble_cercano_pos = self.mueble_mas_cercano()
 
         
+
         # Verificar si el robot está llevando una carga
         if self.enCarga == True:
+            
+            self.mover_hacia_mueble_caja(mueble_cercano_pos,self.cajaEnCarga)
             self.mover_hacia_mueble(mueble_cercano_pos)
 
+            
+            
+            print(self.model.grid.get_cell_list_contents([self.pos]), "penenenenenenennenenenen")
             if isinstance(
                 self.model.grid.get_cell_list_contents([self.pos])[0], EstanteriaChica
             ):
+                
                 self.enCarga = False
                 estanteria_chica = self.model.grid.get_cell_list_contents([self.pos])[0]
                 estanteria_chica.enUso = True
+                self.cajaEnCarga = self.model.grid.get_cell_list_contents([self.pos])[0]
+
+                
                 print("id caja de la estanteria", estanteria_chica.idCaja)
+                
                 estanteria_chica.idCaja = self.idCaja
-                print(estanteria_chica.idCaja)
-                print(estanteria_chica.enUso, "estanteria en uso si o no")
+                print("idCaja estanteriaCh:", estanteria_chica.idCaja)
+                print(estanteria_chica.enUso, "estanteria en uso True/False")
                 print(estanteria_chica, "estanteria_chica")
 
             return
@@ -291,14 +321,25 @@ class AgenteMover(Agent):
             
 
         else:
+                print(self.model.grid.get_cell_list_contents([(18,15)]), "penenenenenenennenenenen")
                 self.mover(cagada_pos)
                 print("pos", self.pos, "cagadapos", cagada_pos)
                 #dtermna si estoy parado en la celda sucia igual q arriba con lo d los muebles chiquitos (eliminamos el limpiar celda)
                 celda_actual = self.model.grid.get_cell_list_contents([self.pos])[0]
                 if isinstance(celda_actual, Celda) and celda_actual.sucia:
-                    self.idCaja = celda_actual.unique_id
-                    self.model.grid.remove_agent(celda_actual)
-                    self.enCarga = True
+                    if isinstance(
+                    self.model.grid.get_cell_list_contents([self.pos])[0], Celda
+                    ):
+                        self.idCaja = celda_actual.unique_id
+                        celda_sucia = self.model.grid.get_cell_list_contents([self.pos])[0]
+                        celda_sucia.sucia = False
+                        self.cajaEnCarga = celda_sucia
+                        self.mover_hacia_mueble_caja(mueble_cercano_pos,celda_sucia) ## aqui hacemos q la celda sucia se mueva a esa posicion
+            
+            
+                        #esto tenemos que moverlo junto con el agente para que no se quede la celda sucia en esa posicion.#important
+                        print("estableciendo en true", celda_actual.sucia)
+                        self.enCarga = True
 
         # Salir del método step
 
