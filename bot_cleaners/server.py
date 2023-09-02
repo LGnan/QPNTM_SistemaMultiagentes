@@ -164,5 +164,5 @@ model_params = {
 }
 
 server = mesa.visualization.ModularServer(
-    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9109
+    Habitacion, [grid, chart_celdas], "botCleaner", model_params, 9110
 )  # pene
