@@ -26,8 +26,6 @@ from .Agentes import (
     Cinta2,
 )
 
-########################################################################################################################################################################
-
 
 class Habitacion(Model):
     def __init__(
@@ -205,15 +203,19 @@ class Habitacion(Model):
         x2, y2 = 23,9
         self.step_counter += 1
 
-        
+        cajas_cinta1 = []
+        cajas_cinta2 = []
+
         if self.step_counter%self.rate_packages == 0:
 
-            new_dirty_cell = Celda(3001+self.id_counter, self)  # Usar un ID fijo
+            new_dirty_cell = Celda(3001+self.id_counter, self)# Usar un ID fijo
+        
             new_dirty_cell.sucia = True
             self.schedule.add(new_dirty_cell)
             self.grid.place_agent(new_dirty_cell, (x, y))
             
-            new_dirty_cell = Celda(4001+self.id_counter, self)  # Usar otro ID fijo
+            new_dirty_cell = Celda(4001+self.id_counter, self) # Usar otro ID fijo
+
             new_dirty_cell.sucia = True
             self.schedule.add(new_dirty_cell)
             self.grid.place_agent(new_dirty_cell, (x2, y2))
