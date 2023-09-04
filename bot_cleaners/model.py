@@ -17,6 +17,8 @@ from .AgenteRecoger import (
     
 )
 
+
+
 from .Agentes import (
     Celda,
     EstanteriaChica,
@@ -155,7 +157,9 @@ class Habitacion(Model):
                 posiciones_disponibles, k=num_agentes
             )
         else:  # 'Fija'
-            pos_inicial_robots = [(21, 14), (21, 9)] 
+            pos_inicial_robots = [(21, 14), (21
+            
+            , 9)] 
 
         for id in range(min(num_agentes, len(pos_inicial_robots))):
             print(f"Length of pos_inicial_robots: {len(pos_inicial_robots)}")  # Debug line

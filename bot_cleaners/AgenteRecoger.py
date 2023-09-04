@@ -160,6 +160,12 @@ class AgenteRecoger(Agent):
                 current, moore=True, include_center=False
             ):
                 if any(
+                    isinstance(agent, AgenteRecoger)
+                    for agent in self.model.grid.get_cell_list_contents([next_cell])
+                ):
+                    continue
+
+                if any(
                     isinstance(agent, AgenteMover)
                     for agent in self.model.grid.get_cell_list_contents([next_cell])
                 ):
@@ -170,6 +176,7 @@ class AgenteRecoger(Agent):
                     for agent in self.model.grid.get_cell_list_contents([next_cell])
                 ):
                     continue
+                
 
                 if any(
                     isinstance(agent, EstanteriaGrande)
