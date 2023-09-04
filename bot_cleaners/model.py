@@ -169,10 +169,10 @@ class Habitacion(Model):
                 posiciones_disponibles, k=num_agentes2
             )
         else:  # 'Fija'
-            pos_inicial_robots = [(21, 14), (21, 9)] 
+            pos_inicial_robots = [(6, 14), (6, 9)] 
         
-        for id in range(num_agentes, min(num_agentes2, len(pos_inicial_robots))):
-            robot = AgenteRecoger(id, self)
+        for id in range( min(num_agentes2, len(pos_inicial_robots))):
+            robot = AgenteRecoger(id+num_agentes, self)
             self.grid.place_agent(robot, pos_inicial_robots[id])
             self.schedule.add(robot)
 

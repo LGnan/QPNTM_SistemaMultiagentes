@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 from bot_cleaners.AgenteMover import AgenteMover
 from bot_cleaners.AgenteRecoger import AgenteRecoger
+from bot_cleaners.Agentes import Celda
 from bot_cleaners.model import Habitacion
 
 model = None
@@ -49,19 +50,56 @@ def get_agent_data():
                     "type": "AgenteMover",
                     "id": agent.unique_id,
                     "pos": agent.pos,
-                })
-            elif isinstance(agent, AgenteRecoger):
-                agent_data.append({
-                    "type": "AgenteRecoger",
-                    "id": agent.unique_id,
-                    "pos": agent.pos,
-                    "carga": agent.carga,
                     "enCarga": agent.enCarga,
                 })
         return jsonify(agent_data), 200  # OK
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": f"Fetching agent data failed due to {str(e)}"}), 500  # Internal Server Error
+    
+
+@app.route('/caja_data', methods=['GET'])
+def get_caja_data():
+    global model
+    if model is None:
+        return jsonify({"error": "Model not initialized"}), 400  # Bad Request
+    
+    try:
+        agent_data_cajas = []
+        for caja in model.schedule.agents:
+            if isinstance(caja, Celda):
+                agent_data_cajas.append({
+                    "type": "Celda",
+                    "id": caja.unique_id,
+                    "pos": caja.pos,
+                })
+        return jsonify(agent_data_cajas), 200  # OK
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"Fetching agent data failed due to {str(e)}"}), 500  # Internal Server Error
+
+@app.route('/agent_recoger', methods=['GET'])
+def get_agent_recoger():
+    global model
+    if model is None:
+        return jsonify({"error": "Model not initialized"}), 400  # Bad Request
+    
+    try:
+        agent_data = []
+        for agent in model.schedule.agents:
+            if isinstance(agent, AgenteRecoger):
+                agent_data.append({
+                    "type": "AgenteRecoger",
+                    "id": agent.unique_id,
+                    "pos": agent.pos,
+                    "enCarga": agent.enCarga,
+                })
+        return jsonify(agent_data), 200  # OK
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"Fetching agent data failed due to {str(e)}"}), 500  # Internal Server Error
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)
