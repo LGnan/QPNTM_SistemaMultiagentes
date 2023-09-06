@@ -15,13 +15,25 @@ def initialize_model():
     global model
     config = request.json
     print(f"Initializing model with configuration: {config}")  
-    print(f"M: {config['M']}, N: {config['N']}")
 
     try:
-        model = Habitacion(**config)
+        # Desempaqueta los parámetros del JSON de configuración
+        # M = 32, N = 24
+        M = config.get('M')  
+        N = config.get('N')  
+        num_agentes = config.get('num_agentes')  
+        rate_packages = config.get('rate_packages')
+        
+        model = Habitacion(
+            M=M,
+            N=N,
+            num_agentes=num_agentes,
+            rate_packages=rate_packages
+        )
+
         return jsonify({"message": "Model initialized"}), 200  # Successfully initialized
-    except Exception as e:  # General Exception to catch all errors
-        traceback.print_exc()  # This will print the stack trace
+    except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": f"Initialization failed due to {str(e)}"}), 500  # Internal Server Error
 
 @app.route('/step', methods=['GET'])
