@@ -52,7 +52,7 @@ class AgenteRecoger(Agent):
     def mover(self, cinta_pos):
 
         if cinta_pos is None:
-            print("Destino es None")
+            # print("Destino es None")
             return
 
         print(f"Calculando path desde {self.pos} hasta {cinta_pos}")
