@@ -195,7 +195,7 @@ class AgenteMover(Agent):
             return
         path = self.a_star(self.pos, mueble_pos)
 
-        print("este es el path dl puto agente", path)
+        # # print("este es el path dl puto agente", path)
 
         if path:
             next_pos = path[0]
@@ -208,13 +208,13 @@ class AgenteMover(Agent):
             return
         path = self.a_star(self.pos, mueble_pos)
 
-        print("este es el path d la caja", path)
+        # print("este es el path d la caja", path)
 
         if path:
             next_pos = path[0]
             self.model.grid.move_agent(caja, next_pos)  # Mueve solo la caja a la siguiente posición
             caja.pos = next_pos  # Actualiza la posición de la caja
-            print(caja.pos, "soy la caja y m estoy moviendo alaverga")
+            # print(caja.pos, "soy la caja y m estoy moviendo alaverga")
 
 
 
@@ -271,7 +271,7 @@ class AgenteMover(Agent):
 
             
             
-            print(self.model.grid.get_cell_list_contents([self.pos]), "penenenenenenennenenenen")
+            # print(self.model.grid.get_cell_list_contents([self.pos]), "penenenenenenennenenenen")
             if isinstance(
                 self.model.grid.get_cell_list_contents([self.pos])[0], EstanteriaChica
             ):
@@ -282,12 +282,12 @@ class AgenteMover(Agent):
                 self.cajaEnCarga = self.model.grid.get_cell_list_contents([self.pos])[0]
 
                 
-                print("id caja de la estanteria", estanteria_chica.idCaja)
+                # print("id caja de la estanteria", estanteria_chica.idCaja)
                 
                 estanteria_chica.idCaja = self.idCaja
-                print("idCaja estanteriaCh:", estanteria_chica.idCaja)
-                print(estanteria_chica.enUso, "estanteria en uso True/False")
-                print(estanteria_chica, "estanteria_chica")
+                # print("idCaja estanteriaCh:", estanteria_chica.idCaja)
+                # print(estanteria_chica.enUso, "estanteria en uso True/False")
+                # print(estanteria_chica, "estanteria_chica")
 
             return
 
@@ -321,9 +321,9 @@ class AgenteMover(Agent):
             
 
         else:
-                print(self.model.grid.get_cell_list_contents([(18,15)]), "penenenenenenennenenenen")
+                # print(self.model.grid.get_cell_list_contents([(18,15)]), "penenenenenenennenenenen")
                 self.mover(cagada_pos)
-                print("pos", self.pos, "cagadapos", cagada_pos)
+                # print("pos", self.pos, "cagadapos", cagada_pos)
                 #dtermna si estoy parado en la celda sucia igual q arriba con lo d los muebles chiquitos (eliminamos el limpiar celda)
                 celda_actual = self.model.grid.get_cell_list_contents([self.pos])[0]
                 if isinstance(celda_actual, Celda) and celda_actual.sucia:
@@ -338,7 +338,7 @@ class AgenteMover(Agent):
             
             
                         #esto tenemos que moverlo junto con el agente para que no se quede la celda sucia en esa posicion.#important
-                        print("estableciendo en true", celda_actual.sucia)
+                        # print("estableciendo en true", celda_actual.sucia)
                         self.enCarga = True
 
         # Salir del método step

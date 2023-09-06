@@ -212,7 +212,7 @@ class Habitacion(Model):
 
         self.schedule.step()
         
-        print("PITOTTOTOTOTOTOOTOTOTOTOOTOT XXXXXXX", self.x)
+        # print("PITOTTOTOTOTOTOOTOTOTOTOOTOT XXXXXXX", self.x)
 
         self.step_counter += 1
 
@@ -243,8 +243,8 @@ class Habitacion(Model):
             if self.new_dirty_cell1.pos == (23, 14):
                 self.new_dirty_cell1.sucia = True
                 self.x = 29  
-        else:
-            print("None ")
+        # else:
+            # print("None ")
 
     
         if self.new_dirty_cell2 is not None:
@@ -254,8 +254,8 @@ class Habitacion(Model):
             if self.new_dirty_cell2.pos == (23, 9):
                 self.new_dirty_cell2.sucia = True
                 self.x2 = 29  
-        else:
-            print("None ")
+        # else:
+            # print("None ")
 
         
     
