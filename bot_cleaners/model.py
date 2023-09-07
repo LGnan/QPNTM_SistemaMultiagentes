@@ -9,12 +9,10 @@ import heapq
 
 from .AgenteMover import (
     AgenteMover,
-    
 )
 
 from .AgenteRecoger import (
     AgenteRecoger,
-    
 )
 
 
@@ -35,13 +33,12 @@ class Habitacion(Model):
         N: int,
         num_agentes: int = 4,
         num_agentesRecoger: int = 4,
-        rate_packages: int =10, 
+        rate_packages: int = 10,
         porc_celdas_sucias: float = 0.6,
         porc_muebles: float = 0.1,
         modo_pos_inicial: str = "Fija",
         step_counter=0,
         # cont = 8
-        
         # x2: int = 29
     ):
         self.datacollector = DataCollector(
@@ -49,6 +46,18 @@ class Habitacion(Model):
                 "Grid": get_grid,
                 "Cargas": get_cargas,
                 "CeldasSucias": get_sucias,
+            },
+        )
+
+        self.datacollector2 = DataCollector(
+            model_reporters={
+                "AgentesMover": compute_agentes_mover,
+                "Paquetes": compute_paquetes,
+            },
+        )
+        self.datacollector3 = DataCollector(
+            model_reporters={
+                "PaquetesEntregados": compute_paquetesEntregados,
             },
         )
 
@@ -65,7 +74,6 @@ class Habitacion(Model):
         self.new_dirty_cell2 = None
         self.x = 29
         self.x2 = 29
-    
 
         posiciones_disponibles = [pos for _, pos in self.grid.coord_iter()]
 
@@ -143,10 +151,11 @@ class Habitacion(Model):
         # posiciones_dispCacaPipi = [pos for _, *pos in self.grid.coord_iter() if condicion(pos)]
 
         self.datacollector.collect(self)
+        self.datacollector2.collect(self)
+        self.datacollector3.collect(self)
 
         self.schedule.step()
 
-        
         self.num_celdas_sucias = int(4 * 10 * porc_celdas_sucias)
 
         x1, y1, x2, y2 = 29, 14, 29, 9
@@ -154,13 +163,12 @@ class Habitacion(Model):
         # Suponiendo que el atributo para suciedad se llama 'sucia' es la caja xd
         self.schedule.add(new_dirty_cell1)
         self.grid.place_agent(new_dirty_cell1, (23, 14))
-        new_dirty_cell1.sucia = True  
+        new_dirty_cell1.sucia = True
 
         new_dirty_cell2 = Celda(4000, self)
         self.schedule.add(new_dirty_cell2)
         self.grid.place_agent(new_dirty_cell2, (23, 9))
-        new_dirty_cell2.sucia = True  
-        
+        new_dirty_cell2.sucia = True
 
         # Posicionamiento de agentes robot
         if modo_pos_inicial == "Aleatoria":
@@ -168,7 +176,14 @@ class Habitacion(Model):
                 posiciones_disponibles, k=num_agentes
             )
         else:  # 'Fija'
-            pos_inicial_robots = [(21, 14), (21, 9), (21, 11), (21, 17), (21, 13), (21,15)] 
+            pos_inicial_robots = [
+                (21, 14),
+                (21, 9),
+                (21, 11),
+                (21, 17),
+                (21, 13),
+                (21, 15),
+            ]
 
         for id in range(min(num_agentes, len(pos_inicial_robots))):
             # print(f"Length of pos_inicial_robots: {len(pos_inicial_robots)}")  # Debug line
@@ -176,16 +191,16 @@ class Habitacion(Model):
             robot = AgenteMover(id, self)
             self.grid.place_agent(robot, pos_inicial_robots[id])
             self.schedule.add(robot)
-        num_agentes2= num_agentes*2
+        num_agentes2 = num_agentes * 2
         if modo_pos_inicial == "Aleatoria":
             pos_inicial_robots = self.random.sample(
                 posiciones_disponibles, k=num_agentesRecoger
             )
         else:  # 'Fija'
-            pos_inicial_robots = [(6, 14), (6, 9), (6,11), (6,17), (6, 13), (6, 15)] 
-        
-        for id in range( min(num_agentesRecoger, len(pos_inicial_robots))):
-            robot = AgenteRecoger(id+num_agentes, self)
+            pos_inicial_robots = [(6, 14), (6, 9), (6, 11), (6, 17), (6, 13), (6, 15)]
+
+        for id in range(min(num_agentesRecoger, len(pos_inicial_robots))):
+            robot = AgenteRecoger(id + num_agentes, self)
             self.grid.place_agent(robot, pos_inicial_robots[id])
             self.schedule.add(robot)
 
@@ -194,6 +209,17 @@ class Habitacion(Model):
                 "Grid": get_grid,
                 "Cargas": get_cargas,
                 "CeldasSucias": get_sucias,
+            },
+        )
+        self.datacollector2 = DataCollector(
+            model_reporters={
+                "AgentesMover": compute_agentes_mover,
+                "Paquetes": compute_paquetes,
+            },
+        )
+        self.datacollector3 = DataCollector(
+            model_reporters={
+                "PaquetesEntregados": compute_paquetesEntregados,
             },
         )
 
@@ -207,62 +233,62 @@ class Habitacion(Model):
                 )
                 robot.mover_hacia_estacion(estacion_cercana)
 
-    
-
     def step(self):
         self.datacollector.collect(self)
+        self.datacollector2.collect(self)
+        self.datacollector3.collect(self)
 
         self.schedule.step()
-        
+
         # print("PITOTTOTOTOTOTOOTOTOTOTOOTOT XXXXXXX", self.x)
 
         self.step_counter += 1
 
-        y,y2 = 14, 9
-        
-   
-        if self.step_counter%self.rate_packages == 0:
-            # Cinta de arriba #1 
-            
-            self.new_dirty_cell1 = Celda(3001+self.id_counter, self)
+        y, y2 = 14, 9
+
+        if self.step_counter % self.rate_packages == 0:
+            # Cinta de arriba #1
+
+            self.new_dirty_cell1 = Celda(3001 + self.id_counter, self)
             self.new_dirty_cell1.sucia = False
             self.schedule.add(self.new_dirty_cell1)
             self.grid.place_agent(self.new_dirty_cell1, (29, 14))
-            
+
             # Cinta de abajo #2
-            self.new_dirty_cell2 = Celda(4001+self.id_counter, self) 
+            self.new_dirty_cell2 = Celda(4001 + self.id_counter, self)
             self.new_dirty_cell2.sucia = False
             self.schedule.add(self.new_dirty_cell2)
             self.grid.place_agent(self.new_dirty_cell2, (29, 9))
             self.id_counter += 1
 
-        
-       
         if self.new_dirty_cell1 is not None:
             self.x -= 1
-            if 0 <= self.x < self.grid.width and 0 <= y < self.grid.height and self.new_dirty_cell1.sucia == False:
+            if (
+                0 <= self.x < self.grid.width
+                and 0 <= y < self.grid.height
+                and self.new_dirty_cell1.sucia == False
+            ):
                 self.grid.move_agent(self.new_dirty_cell1, (self.x, y))
             if self.new_dirty_cell1.pos == (23, 14):
                 self.new_dirty_cell1.sucia = True
-                self.x = 29  
+                self.x = 29
         # else:
-            # print("None ")
+        # print("None ")
 
-    
         if self.new_dirty_cell2 is not None:
             self.x2 -= 1
-            if 0 <= self.x2 < self.grid.width and 0 <= y2 < self.grid.height and self.new_dirty_cell2.sucia == False:
+            if (
+                0 <= self.x2 < self.grid.width
+                and 0 <= y2 < self.grid.height
+                and self.new_dirty_cell2.sucia == False
+            ):
                 self.grid.move_agent(self.new_dirty_cell2, (self.x2, y2))
             if self.new_dirty_cell2.pos == (23, 9):
                 self.new_dirty_cell2.sucia = True
-                self.x2 = 29  
+                self.x2 = 29
         # else:
-            # print("None ")
+        # print("None ")
 
-        
-    
-        
-                   
     def todoLimpio(self):
         for content, x, y in self.grid.coord_iter():
             for obj in content:
@@ -299,9 +325,46 @@ def get_sucias(model: Model) -> int:
         for obj in cell_content:
             if isinstance(obj, Celda) and obj.sucia:
                 sum_sucias += 1
-    return sum_sucias / model.porc_celdas_sucias
+    return sum_sucias
 
 
 def get_movimientos(agent: Agent) -> dict:
     if isinstance(agent, AgenteMover):
         return {agent.unique_id: agent.movimientos}
+
+
+def compute_agentes_mover(model: Model) -> int:
+    print(len([a for a in model.schedule.agents if isinstance(a, AgenteMover)]))
+    return len([a for a in model.schedule.agents if isinstance(a, AgenteMover)])
+
+
+def compute_paquetes(model: Model) -> int:
+    print(
+        "Cacacacacacacacac",
+        len(
+            [
+                a
+                for a in model.schedule.agents
+                if isinstance(a, AgenteRecoger) and a.enCarga
+            ]
+        ),
+    )
+    return len(
+        [a for a in model.schedule.agents if isinstance(a, AgenteRecoger) and a.enCarga]
+    )
+
+
+def compute_paquetesEntregados(model: Model) -> int:
+    print(
+        "PNENENENENE",
+        sum(
+            a.paquetesDespachados
+            for a in model.schedule.agents
+            if isinstance(a, AgenteRecoger)
+        ),
+    )
+    return sum(
+        a.paquetesDespachados
+        for a in model.schedule.agents
+        if isinstance(a, AgenteRecoger)
+    )
