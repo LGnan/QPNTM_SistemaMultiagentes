@@ -124,7 +124,16 @@ model_params = {
         MAX_NUMBER_ROBOTS,
         1,
         description="Escoge cuántos robots deseas implementar en el modelo",
+    ),"num_agentesRecoger": mesa.visualization.Slider(
+        "Número de Agentes Recoger",
+        2,
+        2,
+        MAX_NUMBER_ROBOTS,
+        1,
+        description="Escoge cuántos robots recoger deseas implementar en el modelo",
     ),
+
+
     "rate_packages": mesa.visualization.Slider(
         "Steps por paquete",
         15,

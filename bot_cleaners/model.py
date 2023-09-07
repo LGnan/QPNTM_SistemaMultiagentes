@@ -34,6 +34,7 @@ class Habitacion(Model):
         M: int,
         N: int,
         num_agentes: int = 4,
+        num_agentesRecoger: int = 4,
         rate_packages: int =10, 
         porc_celdas_sucias: float = 0.6,
         porc_muebles: float = 0.1,
@@ -52,6 +53,7 @@ class Habitacion(Model):
         )
 
         self.num_agentes = num_agentes
+        self.num_agentesRecoger = num_agentesRecoger
         self.porc_celdas_sucias = porc_celdas_sucias
         self.porc_muebles = porc_muebles
         self.step_counter = step_counter
@@ -177,12 +179,12 @@ class Habitacion(Model):
         num_agentes2= num_agentes*2
         if modo_pos_inicial == "Aleatoria":
             pos_inicial_robots = self.random.sample(
-                posiciones_disponibles, k=num_agentes2
+                posiciones_disponibles, k=num_agentesRecoger
             )
         else:  # 'Fija'
             pos_inicial_robots = [(6, 14), (6, 9), (6,11), (6,17), (6, 13), (6, 15)] 
         
-        for id in range( min(num_agentes, len(pos_inicial_robots))):
+        for id in range( min(num_agentesRecoger, len(pos_inicial_robots))):
             robot = AgenteRecoger(id+num_agentes, self)
             self.grid.place_agent(robot, pos_inicial_robots[id])
             self.schedule.add(robot)

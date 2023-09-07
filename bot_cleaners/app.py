@@ -23,12 +23,14 @@ def initialize_model():
         N = config.get('N')  
         num_agentes = config.get('num_agentes')  
         rate_packages = config.get('rate_packages')
+        num_agentesRecoger = config.get('num_agentesRecoger') 
         
         model = Habitacion(
             M=M,
             N=N,
             num_agentes=num_agentes,
-            rate_packages=rate_packages
+            rate_packages=rate_packages,
+            num_agentesRecoger = num_agentesRecoger
         )
 
         return jsonify({"message": "Model initialized"}), 200  # Successfully initialized

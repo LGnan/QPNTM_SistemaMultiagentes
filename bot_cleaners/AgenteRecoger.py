@@ -214,21 +214,21 @@ class AgenteRecoger(Agent):
                 self.cajaEnCarga.model.grid.move_agent(self.cajaEnCarga, (self.x, 9))
                 self.x-=1
                 if self.x < 3:
-                    self.cajaEnCarga.sucia = True  
+                    self.cajaEnCarga.sucia = False 
             if self.cajaEnCarga.pos == (3,14) or self.x2 < 4:
                 print(" penenenennenenenenenenennenene SI BANDA MEMAMAELPITPXDXDXDX2",self.x2)
                 self.cajaEnCarga.model.grid.move_agent(self.cajaEnCarga, (self.x2, 14))
                 self.x2-=1
                 if self.x2 < 3:
-                    self.cajaEnCarga.sucia = True  
+                    self.cajaEnCarga.sucia = False
                 
             # print(self.cajaEnCarga.pos)
             if self.cajaEnCarga.pos == (0,14):
                 self.despachar_caja = False  
-                self.cajaEnCarga.sucia = False 
+                self.cajaEnCarga.sucia = True
             if self.cajaEnCarga.pos == (0,9):
                 self.despachar_caja = False
-                self.cajaEnCarga.sucia = False 
+                self.cajaEnCarga.sucia = True
                 
 
         estanterias = [
