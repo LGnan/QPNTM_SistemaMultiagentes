@@ -118,7 +118,7 @@ class AgenteMover(Agent):
 
         return mueble_cercano
 
-    def cagada_mas_cercana(self):
+    def caja_mas_cercana(self):
         cagadas_pos = [
             agent.pos
             for agent in self.model.schedule.agents
@@ -257,7 +257,7 @@ class AgenteMover(Agent):
 
         muebles = self.buscar_muebles(vecinos2)
         celdas_sucias = self.buscar_celdas_sucia(vecinos)
-        cagada_pos = self.cagada_mas_cercana()
+        cagada_pos = self.caja_mas_cercana()
         estacion_pos = self.estacion_carga_mas_cercana()
         mueble_cercano_pos = self.mueble_mas_cercano()
 
@@ -271,7 +271,6 @@ class AgenteMover(Agent):
 
             
             
-            # print(self.model.grid.get_cell_list_contents([self.pos]), "penenenenenenennenenenen")
             if isinstance(
                 self.model.grid.get_cell_list_contents([self.pos])[0], EstanteriaChica
             ):
@@ -321,7 +320,6 @@ class AgenteMover(Agent):
             
 
         else:
-                # print(self.model.grid.get_cell_list_contents([(18,15)]), "penenenenenenennenenenen")
                 self.mover(cagada_pos)
                 # print("pos", self.pos, "cagadapos", cagada_pos)
                 #dtermna si estoy parado en la celda sucia igual q arriba con lo d los muebles chiquitos (eliminamos el limpiar celda)

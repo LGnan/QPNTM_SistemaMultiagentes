@@ -22,7 +22,7 @@ def agent_portrayal(agent):
         return {
             "Shape": "circle",
             "Filled": "false",
-            "Color": agent.color,  # pa q tengan diferente qolo
+            "Color": agent.color, 
             "Layer": 1,
             "r": 1.0,
             "text": texto,
@@ -33,7 +33,7 @@ def agent_portrayal(agent):
         return {
             "Shape": "circle",
             "Filled": "false",
-            "Color": agent.color,  # pa q tengan diferente qolo
+            "Color": agent.color, 
             "Layer": 1,
             "r": 1.0,
             "text": texto,

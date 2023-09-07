@@ -240,8 +240,6 @@ class Habitacion(Model):
 
         self.schedule.step()
 
-        # print("PITOTTOTOTOTOTOOTOTOTOTOOTOT XXXXXXX", self.x)
-
         self.step_counter += 1
 
         y, y2 = 14, 9

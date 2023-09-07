@@ -213,16 +213,11 @@ class AgenteRecoger(Agent):
             #### quitar el self.cajaEnCarga.sucia = True (es meramente estético para el mesa)
             # (4,9) (4,14)
             if self.cajaEnCarga.pos == (3, 9) or self.x < 4:
-                # print("NO BANDA MEMAMAELPITPXDXDXDX",self.x)
                 self.cajaEnCarga.model.grid.move_agent(self.cajaEnCarga, (self.x, 9))
                 self.x -= 1
                 if self.x < 3:
                     self.cajaEnCarga.sucia = False
             if self.cajaEnCarga.pos == (3, 14) or self.x2 < 4:
-                # print(
-                #     " penenenennenenenenenenennenene SI BANDA MEMAMAELPITPXDXDXDX2",
-                #     self.x2,
-                # )
                 self.cajaEnCarga.model.grid.move_agent(self.cajaEnCarga, (self.x2, 14))
                 self.x2 -= 1
                 if self.x2 < 3:
