@@ -107,6 +107,7 @@ def get_agent_recoger():
                     "id": agent.unique_id,
                     "pos": agent.pos,
                     "enCarga": agent.enCarga,
+                    "paquetesDespachados": agent.paquetesDespachados,
                 })
         return jsonify(agent_data), 200  # OK
     except Exception as e:
